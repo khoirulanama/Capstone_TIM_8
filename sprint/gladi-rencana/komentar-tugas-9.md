@@ -1,4 +1,4 @@
-**Gladi rencana — 8 Nov 2026**
+**Gladi rencana — 10 Nov 2026**
 
 ✅ **Mode simulasi**
 ```bash
@@ -10,6 +10,7 @@ python meja.py --simulasi jalankan ../rencana/t08-kipas-tak-seimbang.yaml
 ✅ **Folder sesi simulasi**
 `data/tim08/sesi-20261108-234403/` — `label.csv` 144 baris, `manifest.json`, `imu.csv` 400 Hz (1.036.800 sampel), `aktuator.csv`, `audio_index.csv`, `lingkungan.csv`.
 Bukti ringkas dibagikan lewat repo: `sprint/gladi-rencana/sesi-simulasi/` (folder lengkap 56 MB tidak di-commit karena `data/*` di-ignore).
+Data diambil pada **10 November 2026**; nama folder mengikuti waktu simulasi dibuat.
 
 ✅ **Pemeriksaan**
 - 144 kondisi; 12 blok; 12 kondisi/blok.

@@ -4,7 +4,7 @@
 # Setiap tim mengamati kipas dengan jumlah mur berbeda, sehingga data yang
 # terkumpul cukup untuk analisis.
 #
-# CATATAN (8 Nov 2026): berkas ini memakai usulan revisi tim-08.pdf bagian 7
+# CATATAN (10 Nov 2026): berkas ini memakai usulan revisi tim-08.pdf bagian 7
 # (ulangan 2, durasi 12 detik -> 96 kondisi). Kartu tugas "Gladi rencana"
 # masih menyebut 144 kondisi (ulangan 3, 18 detik). Selisih ini dicatat di
 # sprint/gladi-rencana/122450041.md dan perlu keputusan pembimbing.
