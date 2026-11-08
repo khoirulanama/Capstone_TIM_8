@@ -1,0 +1,161 @@
+================================================================
+meja.py -- mode SIMULASI (tanpa perangkat)
+================================================================
+Rencana   : ..\rencana\t08-kipas-tak-seimbang.yaml
+Tim       : 8 -- Diagnosis beban tak seimbang kipas dari getaran
+Pembimbing: Christyan Tamaro Nadeak
+Seed      : 1008
+Faktor    : kipas (otomatis, 4 taraf), beban_kipas (manual, 4 taraf)
+Blok      : 12 (4 kombinasi manual x 3 ulangan_blok)
+Kondisi   : 12 per blok x 12 blok = 144 kondisi
+Durasi    : 18 s + 2 s jeda per kondisi; ganti blok 120 s
+Estimasi  : 4320 s = 1 jam 12 menit
+Folder    : C:\Users\acer\workbench-workspace\Capstone_TIM_8\data\tim08\sesi-20261108-234403
+----------------------------------------------------------------
+Daftar 144 kondisi:
+[  1/144] blok 01/12 kondisi 01/12 ulangan 2  kipas=255  beban_kipas=3 mur
+[  2/144] blok 01/12 kondisi 02/12 ulangan 1  kipas=220  beban_kipas=3 mur
+[  3/144] blok 01/12 kondisi 03/12 ulangan 3  kipas=160  beban_kipas=3 mur
+[  4/144] blok 01/12 kondisi 04/12 ulangan 3  kipas=255  beban_kipas=3 mur
+[  5/144] blok 01/12 kondisi 05/12 ulangan 2  kipas=220  beban_kipas=3 mur
+[  6/144] blok 01/12 kondisi 06/12 ulangan 1  kipas=255  beban_kipas=3 mur
+[  7/144] blok 01/12 kondisi 07/12 ulangan 1  kipas=160  beban_kipas=3 mur
+[  8/144] blok 01/12 kondisi 08/12 ulangan 2  kipas=100  beban_kipas=3 mur
+[  9/144] blok 01/12 kondisi 09/12 ulangan 2  kipas=160  beban_kipas=3 mur
+[ 10/144] blok 01/12 kondisi 10/12 ulangan 3  kipas=100  beban_kipas=3 mur
+[ 11/144] blok 01/12 kondisi 11/12 ulangan 1  kipas=100  beban_kipas=3 mur
+[ 12/144] blok 01/12 kondisi 12/12 ulangan 3  kipas=220  beban_kipas=3 mur
+[ 13/144] blok 02/12 kondisi 01/12 ulangan 1  kipas=220  beban_kipas=0 mur
+[ 14/144] blok 02/12 kondisi 02/12 ulangan 2  kipas=255  beban_kipas=0 mur
+[ 15/144] blok 02/12 kondisi 03/12 ulangan 3  kipas=160  beban_kipas=0 mur
+[ 16/144] blok 02/12 kondisi 04/12 ulangan 2  kipas=100  beban_kipas=0 mur
+[ 17/144] blok 02/12 kondisi 05/12 ulangan 3  kipas=220  beban_kipas=0 mur
+[ 18/144] blok 02/12 kondisi 06/12 ulangan 3  kipas=100  beban_kipas=0 mur
+[ 19/144] blok 02/12 kondisi 07/12 ulangan 1  kipas=100  beban_kipas=0 mur
+[ 20/144] blok 02/12 kondisi 08/12 ulangan 2  kipas=160  beban_kipas=0 mur
+[ 21/144] blok 02/12 kondisi 09/12 ulangan 2  kipas=220  beban_kipas=0 mur
+[ 22/144] blok 02/12 kondisi 10/12 ulangan 1  kipas=255  beban_kipas=0 mur
+[ 23/144] blok 02/12 kondisi 11/12 ulangan 1  kipas=160  beban_kipas=0 mur
+[ 24/144] blok 02/12 kondisi 12/12 ulangan 3  kipas=255  beban_kipas=0 mur
+[ 25/144] blok 03/12 kondisi 01/12 ulangan 1  kipas=100  beban_kipas=2 mur
+[ 26/144] blok 03/12 kondisi 02/12 ulangan 3  kipas=100  beban_kipas=2 mur
+[ 27/144] blok 03/12 kondisi 03/12 ulangan 2  kipas=160  beban_kipas=2 mur
+[ 28/144] blok 03/12 kondisi 04/12 ulangan 2  kipas=220  beban_kipas=2 mur
+[ 29/144] blok 03/12 kondisi 05/12 ulangan 3  kipas=255  beban_kipas=2 mur
+[ 30/144] blok 03/12 kondisi 06/12 ulangan 3  kipas=220  beban_kipas=2 mur
+[ 31/144] blok 03/12 kondisi 07/12 ulangan 1  kipas=220  beban_kipas=2 mur
+[ 32/144] blok 03/12 kondisi 08/12 ulangan 2  kipas=100  beban_kipas=2 mur
+[ 33/144] blok 03/12 kondisi 09/12 ulangan 3  kipas=160  beban_kipas=2 mur
+[ 34/144] blok 03/12 kondisi 10/12 ulangan 2  kipas=255  beban_kipas=2 mur
+[ 35/144] blok 03/12 kondisi 11/12 ulangan 1  kipas=160  beban_kipas=2 mur
+[ 36/144] blok 03/12 kondisi 12/12 ulangan 1  kipas=255  beban_kipas=2 mur
+[ 37/144] blok 04/12 kondisi 01/12 ulangan 3  kipas=100  beban_kipas=2 mur
+[ 38/144] blok 04/12 kondisi 02/12 ulangan 2  kipas=100  beban_kipas=2 mur
+[ 39/144] blok 04/12 kondisi 03/12 ulangan 1  kipas=255  beban_kipas=2 mur
+[ 40/144] blok 04/12 kondisi 04/12 ulangan 1  kipas=160  beban_kipas=2 mur
+[ 41/144] blok 04/12 kondisi 05/12 ulangan 1  kipas=100  beban_kipas=2 mur
+[ 42/144] blok 04/12 kondisi 06/12 ulangan 1  kipas=220  beban_kipas=2 mur
+[ 43/144] blok 04/12 kondisi 07/12 ulangan 2  kipas=255  beban_kipas=2 mur
+[ 44/144] blok 04/12 kondisi 08/12 ulangan 3  kipas=255  beban_kipas=2 mur
+[ 45/144] blok 04/12 kondisi 09/12 ulangan 3  kipas=160  beban_kipas=2 mur
+[ 46/144] blok 04/12 kondisi 10/12 ulangan 2  kipas=160  beban_kipas=2 mur
+[ 47/144] blok 04/12 kondisi 11/12 ulangan 2  kipas=220  beban_kipas=2 mur
+[ 48/144] blok 04/12 kondisi 12/12 ulangan 3  kipas=220  beban_kipas=2 mur
+[ 49/144] blok 05/12 kondisi 01/12 ulangan 2  kipas=220  beban_kipas=2 mur
+[ 50/144] blok 05/12 kondisi 02/12 ulangan 3  kipas=220  beban_kipas=2 mur
+[ 51/144] blok 05/12 kondisi 03/12 ulangan 1  kipas=160  beban_kipas=2 mur
+[ 52/144] blok 05/12 kondisi 04/12 ulangan 3  kipas=100  beban_kipas=2 mur
+[ 53/144] blok 05/12 kondisi 05/12 ulangan 2  kipas=160  beban_kipas=2 mur
+[ 54/144] blok 05/12 kondisi 06/12 ulangan 3  kipas=160  beban_kipas=2 mur
+[ 55/144] blok 05/12 kondisi 07/12 ulangan 1  kipas=220  beban_kipas=2 mur
+[ 56/144] blok 05/12 kondisi 08/12 ulangan 3  kipas=255  beban_kipas=2 mur
+[ 57/144] blok 05/12 kondisi 09/12 ulangan 2  kipas=255  beban_kipas=2 mur
+[ 58/144] blok 05/12 kondisi 10/12 ulangan 1  kipas=255  beban_kipas=2 mur
+[ 59/144] blok 05/12 kondisi 11/12 ulangan 1  kipas=100  beban_kipas=2 mur
+[ 60/144] blok 05/12 kondisi 12/12 ulangan 2  kipas=100  beban_kipas=2 mur
+[ 61/144] blok 06/12 kondisi 01/12 ulangan 2  kipas=255  beban_kipas=1 mur
+[ 62/144] blok 06/12 kondisi 02/12 ulangan 2  kipas=220  beban_kipas=1 mur
+[ 63/144] blok 06/12 kondisi 03/12 ulangan 2  kipas=160  beban_kipas=1 mur
+[ 64/144] blok 06/12 kondisi 04/12 ulangan 3  kipas=160  beban_kipas=1 mur
+[ 65/144] blok 06/12 kondisi 05/12 ulangan 1  kipas=220  beban_kipas=1 mur
+[ 66/144] blok 06/12 kondisi 06/12 ulangan 1  kipas=255  beban_kipas=1 mur
+[ 67/144] blok 06/12 kondisi 07/12 ulangan 2  kipas=100  beban_kipas=1 mur
+[ 68/144] blok 06/12 kondisi 08/12 ulangan 3  kipas=255  beban_kipas=1 mur
+[ 69/144] blok 06/12 kondisi 09/12 ulangan 1  kipas=160  beban_kipas=1 mur
+[ 70/144] blok 06/12 kondisi 10/12 ulangan 1  kipas=100  beban_kipas=1 mur
+[ 71/144] blok 06/12 kondisi 11/12 ulangan 3  kipas=220  beban_kipas=1 mur
+[ 72/144] blok 06/12 kondisi 12/12 ulangan 3  kipas=100  beban_kipas=1 mur
+[ 73/144] blok 07/12 kondisi 01/12 ulangan 2  kipas=100  beban_kipas=0 mur
+[ 74/144] blok 07/12 kondisi 02/12 ulangan 3  kipas=255  beban_kipas=0 mur
+[ 75/144] blok 07/12 kondisi 03/12 ulangan 1  kipas=255  beban_kipas=0 mur
+[ 76/144] blok 07/12 kondisi 04/12 ulangan 3  kipas=220  beban_kipas=0 mur
+[ 77/144] blok 07/12 kondisi 05/12 ulangan 1  kipas=160  beban_kipas=0 mur
+[ 78/144] blok 07/12 kondisi 06/12 ulangan 3  kipas=160  beban_kipas=0 mur
+[ 79/144] blok 07/12 kondisi 07/12 ulangan 2  kipas=160  beban_kipas=0 mur
+[ 80/144] blok 07/12 kondisi 08/12 ulangan 2  kipas=220  beban_kipas=0 mur
+[ 81/144] blok 07/12 kondisi 09/12 ulangan 2  kipas=255  beban_kipas=0 mur
+[ 82/144] blok 07/12 kondisi 10/12 ulangan 1  kipas=220  beban_kipas=0 mur
+[ 83/144] blok 07/12 kondisi 11/12 ulangan 3  kipas=100  beban_kipas=0 mur
+[ 84/144] blok 07/12 kondisi 12/12 ulangan 1  kipas=100  beban_kipas=0 mur
+[ 85/144] blok 08/12 kondisi 01/12 ulangan 2  kipas=100  beban_kipas=3 mur
+[ 86/144] blok 08/12 kondisi 02/12 ulangan 3  kipas=100  beban_kipas=3 mur
+[ 87/144] blok 08/12 kondisi 03/12 ulangan 3  kipas=160  beban_kipas=3 mur
+[ 88/144] blok 08/12 kondisi 04/12 ulangan 1  kipas=160  beban_kipas=3 mur
+[ 89/144] blok 08/12 kondisi 05/12 ulangan 3  kipas=220  beban_kipas=3 mur
+[ 90/144] blok 08/12 kondisi 06/12 ulangan 2  kipas=255  beban_kipas=3 mur
+[ 91/144] blok 08/12 kondisi 07/12 ulangan 1  kipas=100  beban_kipas=3 mur
+[ 92/144] blok 08/12 kondisi 08/12 ulangan 2  kipas=220  beban_kipas=3 mur
+[ 93/144] blok 08/12 kondisi 09/12 ulangan 1  kipas=255  beban_kipas=3 mur
+[ 94/144] blok 08/12 kondisi 10/12 ulangan 2  kipas=160  beban_kipas=3 mur
+[ 95/144] blok 08/12 kondisi 11/12 ulangan 3  kipas=255  beban_kipas=3 mur
+[ 96/144] blok 08/12 kondisi 12/12 ulangan 1  kipas=220  beban_kipas=3 mur
+[ 97/144] blok 09/12 kondisi 01/12 ulangan 3  kipas=220  beban_kipas=1 mur
+[ 98/144] blok 09/12 kondisi 02/12 ulangan 1  kipas=160  beban_kipas=1 mur
+[ 99/144] blok 09/12 kondisi 03/12 ulangan 1  kipas=100  beban_kipas=1 mur
+[100/144] blok 09/12 kondisi 04/12 ulangan 3  kipas=160  beban_kipas=1 mur
+[101/144] blok 09/12 kondisi 05/12 ulangan 2  kipas=255  beban_kipas=1 mur
+[102/144] blok 09/12 kondisi 06/12 ulangan 2  kipas=100  beban_kipas=1 mur
+[103/144] blok 09/12 kondisi 07/12 ulangan 3  kipas=100  beban_kipas=1 mur
+[104/144] blok 09/12 kondisi 08/12 ulangan 2  kipas=220  beban_kipas=1 mur
+[105/144] blok 09/12 kondisi 09/12 ulangan 2  kipas=160  beban_kipas=1 mur
+[106/144] blok 09/12 kondisi 10/12 ulangan 1  kipas=220  beban_kipas=1 mur
+[107/144] blok 09/12 kondisi 11/12 ulangan 1  kipas=255  beban_kipas=1 mur
+[108/144] blok 09/12 kondisi 12/12 ulangan 3  kipas=255  beban_kipas=1 mur
+[109/144] blok 10/12 kondisi 01/12 ulangan 3  kipas=255  beban_kipas=1 mur
+[110/144] blok 10/12 kondisi 02/12 ulangan 3  kipas=160  beban_kipas=1 mur
+[111/144] blok 10/12 kondisi 03/12 ulangan 1  kipas=160  beban_kipas=1 mur
+[112/144] blok 10/12 kondisi 04/12 ulangan 1  kipas=100  beban_kipas=1 mur
+[113/144] blok 10/12 kondisi 05/12 ulangan 2  kipas=160  beban_kipas=1 mur
+[114/144] blok 10/12 kondisi 06/12 ulangan 3  kipas=100  beban_kipas=1 mur
+[115/144] blok 10/12 kondisi 07/12 ulangan 2  kipas=220  beban_kipas=1 mur
+[116/144] blok 10/12 kondisi 08/12 ulangan 1  kipas=220  beban_kipas=1 mur
+[117/144] blok 10/12 kondisi 09/12 ulangan 3  kipas=220  beban_kipas=1 mur
+[118/144] blok 10/12 kondisi 10/12 ulangan 2  kipas=255  beban_kipas=1 mur
+[119/144] blok 10/12 kondisi 11/12 ulangan 1  kipas=255  beban_kipas=1 mur
+[120/144] blok 10/12 kondisi 12/12 ulangan 2  kipas=100  beban_kipas=1 mur
+[121/144] blok 11/12 kondisi 01/12 ulangan 2  kipas=160  beban_kipas=3 mur
+[122/144] blok 11/12 kondisi 02/12 ulangan 2  kipas=100  beban_kipas=3 mur
+[123/144] blok 11/12 kondisi 03/12 ulangan 1  kipas=100  beban_kipas=3 mur
+[124/144] blok 11/12 kondisi 04/12 ulangan 2  kipas=255  beban_kipas=3 mur
+[125/144] blok 11/12 kondisi 05/12 ulangan 3  kipas=160  beban_kipas=3 mur
+[126/144] blok 11/12 kondisi 06/12 ulangan 3  kipas=220  beban_kipas=3 mur
+[127/144] blok 11/12 kondisi 07/12 ulangan 3  kipas=255  beban_kipas=3 mur
+[128/144] blok 11/12 kondisi 08/12 ulangan 1  kipas=255  beban_kipas=3 mur
+[129/144] blok 11/12 kondisi 09/12 ulangan 1  kipas=160  beban_kipas=3 mur
+[130/144] blok 11/12 kondisi 10/12 ulangan 2  kipas=220  beban_kipas=3 mur
+[131/144] blok 11/12 kondisi 11/12 ulangan 3  kipas=100  beban_kipas=3 mur
+[132/144] blok 11/12 kondisi 12/12 ulangan 1  kipas=220  beban_kipas=3 mur
+[133/144] blok 12/12 kondisi 01/12 ulangan 1  kipas=255  beban_kipas=0 mur
+[134/144] blok 12/12 kondisi 02/12 ulangan 2  kipas=220  beban_kipas=0 mur
+[135/144] blok 12/12 kondisi 03/12 ulangan 1  kipas=220  beban_kipas=0 mur
+[136/144] blok 12/12 kondisi 04/12 ulangan 1  kipas=160  beban_kipas=0 mur
+[137/144] blok 12/12 kondisi 05/12 ulangan 2  kipas=100  beban_kipas=0 mur
+[138/144] blok 12/12 kondisi 06/12 ulangan 3  kipas=160  beban_kipas=0 mur
+[139/144] blok 12/12 kondisi 07/12 ulangan 2  kipas=255  beban_kipas=0 mur
+[140/144] blok 12/12 kondisi 08/12 ulangan 3  kipas=220  beban_kipas=0 mur
+[141/144] blok 12/12 kondisi 09/12 ulangan 3  kipas=100  beban_kipas=0 mur
+[142/144] blok 12/12 kondisi 10/12 ulangan 3  kipas=255  beban_kipas=0 mur
+[143/144] blok 12/12 kondisi 11/12 ulangan 2  kipas=160  beban_kipas=0 mur
+[144/144] blok 12/12 kondisi 12/12 ulangan 1  kipas=100  beban_kipas=0 mur
+----------------------------------------------------------------
+Selesai. 144 kondisi tercatat di C:\Users\acer\workbench-workspace\Capstone_TIM_8\data\tim08\sesi-20261108-234403\label.csv

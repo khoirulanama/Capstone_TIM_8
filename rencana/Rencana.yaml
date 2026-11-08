@@ -1,0 +1,59 @@
+# Rencana eksperimen tim 8: Diagnosis beban tak seimbang kipas dari getaran
+# Label: desain -- jumlah mur di bilah (operator) + PWM (otomatis)
+# Rancangan ini dipilih karena waktu observasi kipas sesuai pembagian tiap tim.
+# Setiap tim mengamati kipas dengan jumlah mur berbeda, sehingga data yang
+# terkumpul cukup untuk analisis.
+#
+# CATATAN (8 Nov 2026): berkas ini memakai usulan revisi tim-08.pdf bagian 7
+# (ulangan 2, durasi 12 detik -> 96 kondisi). Kartu tugas "Gladi rencana"
+# masih menyebut 144 kondisi (ulangan 3, 18 detik). Selisih ini dicatat di
+# sprint/gladi-rencana/122450041.md dan perlu keputusan pembimbing.
+# Indentasi diperbaiki agar berkas dapat dibaca meja.py (sebelumnya rusak
+# karena penanda baris "↪" ikut tersalin dari PDF).
+
+tim: 8
+judul: Diagnosis beban tak seimbang kipas dari getaran
+pembimbing: Christyan Tamaro Nadeak
+pilar: Mesin dan energi
+seed: 1008
+ulangan: 2
+ulangan_blok: 3
+durasi_kondisi_detik: 12
+jeda_detik: 2
+waktu_ganti_blok_detik: 120
+
+rekam:
+  audio:
+    aktif: true
+    sample_rate: 16000
+  kamera:
+    aktif: false
+
+faktor:
+  kipas:
+    - 100
+    - 160
+    - 220
+    - 255
+  beban_kipas:
+    jenis: manual
+    taraf:
+      - 0 mur
+      - 1 mur
+      - 2 mur
+      - 3 mur
+    instruksi: >-
+      Pasang {taraf} M3 dengan selotip di ujung satu bilah kipas
+      (lepas & pasang ulang tiap blok)
+
+metode:
+  jenis_tugas: Klasifikasi 4 kelas
+  masukan_model: Getaran kipas 400 Hz, jendela 1 s
+  metrik_utama: F1-makro
+  jalur:
+    - CNN
+    - RNN
+    - Transformer
+    - AE
+  pembanding_non_dl: >-
+    Fitur statistik + FFT (RMS, puncak, kurtosis, energi pita) + Random Forest

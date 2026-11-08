@@ -1,0 +1,31 @@
+{
+  "mode": "simulasi",
+  "tim": 8,
+  "judul": "Diagnosis beban tak seimbang kipas dari getaran",
+  "pembimbing": "Christyan Tamaro Nadeak",
+  "pilar": "Mesin dan energi",
+  "rencana": "..\\rencana\\t08-kipas-tak-seimbang.yaml",
+  "seed": 1008,
+  "dibuat": "2026-11-08T23:44:09",
+  "jumlah_blok": 12,
+  "kondisi_per_blok": 12,
+  "jumlah_kondisi": 144,
+  "ulangan": 3,
+  "ulangan_blok": 3,
+  "durasi_kondisi_detik": 18.0,
+  "jeda_detik": 2.0,
+  "waktu_ganti_blok_detik": 120.0,
+  "estimasi_detik": 4320.0,
+  "estimasi_menit": 72.0,
+  "berkas": [
+    "label.csv",
+    "aktuator.csv",
+    "instruksi.txt",
+    "README.md",
+    "imu.csv",
+    "lingkungan.csv",
+    "digital.csv",
+    "audio_index.csv"
+  ],
+  "catatan": "Data SINTETIS dari mode simulasi; bukan hasil pengukuran. Jangan dipakai sebagai data latih/uji model."
+}
