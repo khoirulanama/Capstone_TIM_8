@@ -1,5 +1,7 @@
 {
-  "sumber": "https://… (tautan dataset dari kartu Kasus tim di Workbench)",
-  "berkas": ["data/latih.csv"],
-  "catatan": "Isi pada Sprint 0: versi/tanggal unduh, jumlah baris, dan perubahan (bila ada). Berkas data sendiri tidak di-commit."
+  "sumber": "https://github.com/sains-data/capstone-dl-2026-starter",
+  "berkas": [
+    "data/rekaman_kipas_simulasi.npz"
+  ],
+  "catatan": "Sprint 0 (Protokol beku): Sinyal getaran kipas sesuai rancangan meja uji (16 kHz, 18 s, 4 PWM x 4 Beban x 9 Blok = 144 rekaman). Akan digantikan rekaman aktual meja uji setelah sesi operator 6 Nov."
 }
