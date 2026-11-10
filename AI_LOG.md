@@ -7,3 +7,4 @@ melainkan "mengerti atau tidak" — isi kolom terakhir dengan apa yang Anda ubah
 | Tanggal | Siapa (NIM) | Alat | Untuk apa | Apa yang diubah dari keluarannya |
 |---|---|---|---|---|
 | 2026-10-31 | 122450039 | Antigravity | Sprint 0: Generator simulasi meja uji, protokol tim & baseline | Menyesuaikan pemotongan 1 detik awal transien, desimasi 400 Hz, windowing 1 s, serta group split sesi sesuai rancangan meja uji |
+| 2026-11-10 | 122450041 | OpenCode (DeepSeek) | Gladi rencana: harness `perekam/meja.py`, rencana 144 kondisi, catatan & komentar tugas | Memeriksa ulang skema YAML, memastikan keluaran 144 kondisi, memperbaiki indentasi `rencana/Rencana.yaml`, dan menandai selisih 96 vs 144 serta struktur `generate_dummy.py` |

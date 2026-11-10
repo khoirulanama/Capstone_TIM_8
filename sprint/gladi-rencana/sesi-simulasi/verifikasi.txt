@@ -1,0 +1,12 @@
+sesi                : data/tim08/sesi-20261110-231133
+dibuat              : 2026-11-10T23:11:39
+jumlah kondisi      : 144
+jumlah blok         : 12
+kondisi per blok    : [12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12]
+taraf beban per blok: [('0 mur', 36), ('1 mur', 36), ('2 mur', 36), ('3 mur', 36)]
+PWM kipas           : [('100', 36), ('160', 36), ('220', 36), ('255', 36)]
+ulangan_ke          : [('1', 48), ('2', 48), ('3', 48)]
+mulai pertama       : 120.000 selesai terakhir: 4318.000
+total baris imu     : 1036800
+laju imu (Hz)       : 400.0
+berkas audio_index  : 144
