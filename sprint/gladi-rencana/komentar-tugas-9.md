@@ -8,7 +8,7 @@ python meja.py --simulasi jalankan ../rencana/t08-kipas-tak-seimbang.yaml
 → mencetak **144 kondisi** (12 blok × 12 kondisi; 4 taraf beban × 3 `ulangan_blok`, 4 PWM kipas × 3 `ulangan`). Estimasi **1 jam 12 menit** (48 menit rekam + 24 menit ganti blok).
 
 ✅ **Folder sesi simulasi**
-`data/tim08/sesi-20261108-234403/` — `label.csv` 144 baris, `manifest.json`, `imu.csv` 400 Hz (1.036.800 sampel), `aktuator.csv`, `audio_index.csv`, `lingkungan.csv`.
+`data/tim08/sesi-20261110-231133/` — `label.csv` 144 baris, `manifest.json`, `imu.csv` 400 Hz (1.036.800 sampel), `aktuator.csv`, `audio_index.csv`, `lingkungan.csv`.
 Bukti ringkas dibagikan lewat repo: `sprint/gladi-rencana/sesi-simulasi/` (folder lengkap 56 MB tidak di-commit karena `data/*` di-ignore).
 Data diambil pada **10 November 2026**; nama folder mengikuti waktu simulasi dibuat.
 

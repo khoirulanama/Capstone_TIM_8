@@ -10,7 +10,7 @@ Blok      : 12 (4 kombinasi manual x 3 ulangan_blok)
 Kondisi   : 12 per blok x 12 blok = 144 kondisi
 Durasi    : 18 s + 2 s jeda per kondisi; ganti blok 120 s
 Estimasi  : 4320 s = 1 jam 12 menit
-Folder    : C:\Users\acer\workbench-workspace\Capstone_TIM_8\data\tim08\sesi-20261108-234403
+Folder    : C:\Users\acer\workbench-workspace\Capstone_TIM_8\data\tim08\sesi-20261110-231133
 ----------------------------------------------------------------
 Daftar 144 kondisi:
 [  1/144] blok 01/12 kondisi 01/12 ulangan 2  kipas=255  beban_kipas=3 mur
@@ -158,4 +158,4 @@ Daftar 144 kondisi:
 [143/144] blok 12/12 kondisi 11/12 ulangan 2  kipas=160  beban_kipas=0 mur
 [144/144] blok 12/12 kondisi 12/12 ulangan 1  kipas=100  beban_kipas=0 mur
 ----------------------------------------------------------------
-Selesai. 144 kondisi tercatat di C:\Users\acer\workbench-workspace\Capstone_TIM_8\data\tim08\sesi-20261108-234403\label.csv
+Selesai. 144 kondisi tercatat di C:\Users\acer\workbench-workspace\Capstone_TIM_8\data\tim08\sesi-20261110-231133\label.csv
