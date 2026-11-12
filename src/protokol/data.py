@@ -1,88 +1,118 @@
-"""Pemuat data kasus tim: Diagnosis Beban Tak Seimbang Kipas dari Getaran.
-Protokol Sprint 0 (Tim 8).
+"""Pemuat data kasus Tim 8 (diagnosis beban tak seimbang kipas) — MILIK TIM, dibekukan setelah disetujui.
 
-Kontrak yang dipakai penilai dan baseline starter:
-    TUGAS = "klasifikasi"
-    muat() -> (X_train, y_train, X_val, y_val, X_test, y_test)
+    TUGAS = "klasifikasi"          # 4 kelas: 0, 1, 2, 3 mur
+    muat() -> X_train, y_train, X_val, y_val, X_test, y_test    # X: (N, 6, 400) float32
 
-Spesifikasi Data & Pemrosesan:
-- Input: Sinyal getaran kipas 400 Hz, jendela 1 detik (400 sampel per jendela).
-- Target: 4 kelas (0, 1, 2, 3 mur pada bilah kipas).
-- Pemotongan: 1 detik pertama tiap kondisi dibuang (transien awal).
-- Resampling: 16 kHz -> 400 Hz (faktor desimasi = 40).
-- Jendela: 1 s (400 sampel) tanpa tumpang tindih (stride 400).
-- Pembagian data: Group-based split berdasarkan sesi/blok eksperimen.
-  * Sesi 1 & 2 -> Pembagian Train & Validasi menggunakan split.indeks (seed 2026).
-  * Sesi 3 -> Test set (disimpan untuk evaluasi final Sprint terakhir).
+Perbedaan penting dari contoh Fashion-MNIST di starter: split TIDAK diacak per jendela
+(``split.indeks``), tetapi per BLOK. Jendela dari satu kondisi sangat mirip; bila dipisah acak,
+F1 menjadi tinggi semu (metode umum bag. 9.2, tim-08 bag. 6). Tiap taraf mur dipasang 3 kali
+(3 blok); pemasangan ke-k dari semua taraf membentuk satu LIPATAN:
+
+    lipatan 0/1/2 = data uji ; satu lipatan lain = validasi ; satu sisanya = latih.
+
+Urutan peran lipatan ditetapkan sekali oleh seed 2026 (seed split beku starter). Lipatan uji
+dipilih lewat argumen ``lipatan`` atau variabel lingkungan ``CAPSTONE_LIPATAN`` (bawaan 0), supaya
+``run.py`` model dan ``evaluate`` memakai split yang sama tanpa mengubah kontrak ``muat()``.
+
+Normalisasi: rerata/simpangan baku per kanal dihitung dari data LATIH saja, lalu diterapkan apa
+adanya pada validasi dan uji. Jendela latih tumpang-tindih 50 %; validasi/uji tidak.
 """
 from __future__ import annotations
 
-from pathlib import Path
+import os
+from functools import lru_cache
+
 import numpy as np
 
 from src.common import manifest, split
+from . import jendela
 
 TUGAS = "klasifikasi"
+KELAS = ["0 mur", "1 mur", "2 mur", "3 mur"]
+LANGKAH_LATIH = 0.5       # detik (tumpang-tindih 50 %) — hanya untuk data latih
+LANGKAH_EVAL = 1.0        # detik (tanpa tumpang-tindih) — validasi dan uji
+N_LIPATAN = 3
 
 
-def muat():
-    """Memuat sinyal getaran kipas, memotong jendela 1 s (400 Hz), dan membagi train/val/test."""
+@lru_cache(maxsize=4)
+def _jendela(langkah: float) -> dict:
     m = manifest.baca()
-    data_path = manifest.AKAR / m["berkas"][0]
-    if not data_path.exists():
-        raise FileNotFoundError(f"Berkas dataset {data_path} tidak ditemukan.")
+    sesi = m.get("sesi")
+    if not sesi:
+        raise RuntimeError("data/MANIFEST.json belum memuat kunci 'sesi' (folder sesi). "
+                           "Jalankan: python -m src.protokol.buat_manifest --sesi data/<folder-sesi>")
+    folder = manifest.AKAR / sesi
+    return jendela.potong(folder, langkah=langkah, keluarkan=tuple(m.get("keluarkan", [])))
 
-    data = np.load(data_path)
-    sinyal = data["sinyal"]       # shape: [N_kondisi, N_sampel]
-    beban = data["beban"]         # shape: [N_kondisi] (0, 1, 2, 3 mur)
-    sesi = data["sesi"]           # shape: [N_kondisi] (1, 2, 3)
-    sr_asli = int(data["sr"])     # 16000
 
-    sr_target = 400
-    faktor_desimasi = sr_asli // sr_target  # 16000 // 400 = 40
-    jendela_titik = sr_target               # 400 sampel per detik
+def peran_lipatan(lipatan: int) -> tuple[int, int, int]:
+    """(ulangan_latih, ulangan_val, ulangan_uji) untuk satu lipatan, urutan dari seed split beku."""
+    urutan = np.random.default_rng(split.SEED_SPLIT).permutation(N_LIPATAN)
+    return (int(urutan[(lipatan + 2) % 3]), int(urutan[(lipatan + 1) % 3]), int(urutan[lipatan]))
 
-    # 1 detik pertama dibuang (1 * sr_asli sampel)
-    awal_potong = sr_asli
-    sinyal_bersih = sinyal[:, awal_potong:]  # 17 detik tersisa per kondisi
 
-    # Resampling sederhana dengan decimation rata-rata blok / subsampling
-    # Bentuk: [N_kondisi, durasi_detik * 400, 40] -> mean over 40
-    n_kondisi, n_sampel = sinyal_bersih.shape
-    n_resample = n_sampel // faktor_desimasi
-    sinyal_resampled = sinyal_bersih[:, : n_resample * faktor_desimasi].reshape(
-        n_kondisi, n_resample, faktor_desimasi
-    ).mean(axis=-1)  # shape: [n_kondisi, n_resample] pada 400 Hz
+def _ambil(d: dict, ulangan: int) -> tuple[np.ndarray, np.ndarray, dict]:
+    pilih = d["ulangan"] == ulangan
+    return d["X"][pilih], d["y"][pilih], {k: v[pilih] for k, v in d.items() if k not in ("X", "y")}
 
-    # Potong menjadi jendela 1 detik (400 sampel)
-    n_jendela_per_kondisi = n_resample // jendela_titik  # 17 jendela per rekaman
 
-    windows_all = []
-    labels_all = []
-    sesi_all = []
+def muat(lipatan: int | None = None, gabung_val: bool = False, mentah: bool = False):
+    """Enam larik baku starter. ``gabung_val=True`` (latih ulang final) menambahkan validasi ke latih.
+    ``mentah=True`` melewati normalisasi (mis. untuk fitur statistik + FFT pembanding non-DL)."""
+    if lipatan is None:
+        lipatan = int(os.environ.get("CAPSTONE_LIPATAN", "0"))
+    r_tr, r_va, r_te = peran_lipatan(lipatan)
+    Xtr, ytr, _ = _ambil(_jendela(LANGKAH_LATIH), r_tr)
+    Xva, yva, _ = _ambil(_jendela(LANGKAH_EVAL), r_va)
+    Xte, yte, _ = _ambil(_jendela(LANGKAH_EVAL), r_te)
+    if gabung_val:
+        Xv_l, yv_l, _ = _ambil(_jendela(LANGKAH_LATIH), r_va)
+        Xtr, ytr = np.concatenate([Xtr, Xv_l]), np.concatenate([ytr, yv_l])
+    if not mentah:
+        mu = Xtr.mean(axis=(0, 2), keepdims=True)                 # per kanal, dari data latih saja
+        sd = Xtr.std(axis=(0, 2), keepdims=True) + 1e-6
+        Xtr, Xva, Xte = (((x - mu) / sd).astype(np.float32) for x in (Xtr, Xva, Xte))
+    return Xtr, ytr, Xva, yva, Xte, yte
 
-    for i in range(n_kondisi):
-        for j in range(n_jendela_per_kondisi):
-            w = sinyal_resampled[i, j * jendela_titik : (j + 1) * jendela_titik]
-            windows_all.append(w)
-            labels_all.append(beban[i])
-            sesi_all.append(sesi[i])
 
-    X = np.array(windows_all, dtype=np.float32)  # [N_total, 400]
-    y = np.array(labels_all, dtype=np.int64)     # [N_total]
-    s = np.array(sesi_all, dtype=np.int32)
+def muat_meta(lipatan: int | None = None) -> dict[str, dict[str, np.ndarray]]:
+    """Meta (kondisi, blok, ulangan, kipas) tiap jendela val/uji — untuk analisis kesalahan per kecepatan."""
+    if lipatan is None:
+        lipatan = int(os.environ.get("CAPSTONE_LIPATAN", "0"))
+    _, r_va, r_te = peran_lipatan(lipatan)
+    d = _jendela(LANGKAH_EVAL)
+    return {"val": _ambil(d, r_va)[2], "test": _ambil(d, r_te)[2]}
 
-    # Pisahkan Sesi 3 sebagai Test Set (Group split)
-    mask_test = (s == 3)
-    mask_trainval = ~mask_test
 
-    X_trainval, y_trainval = X[mask_trainval], y[mask_trainval]
-    X_test, y_test = X[mask_test], y[mask_test]
+def periksa_pemisahan(lipatan: int | None = None) -> dict:
+    """Pastikan tidak ada satuan pemisahan (blok, kondisi, pemasangan) yang muncul di dua bagian sekaligus.
 
-    # Split train/val menggunakan split beku starter (seed 2026, 10% val)
-    idx_train, idx_val = split.indeks(len(X_trainval), porsi_val=0.1, seed=split.SEED_SPLIT)
+    Memeriksa pasangan latih-validasi, latih-uji, validasi-uji pada data yang sama dengan ``muat()``.
+    Melempar AssertionError bila ada irisan; mengembalikan ringkasan jumlah blok/kondisi/jendela per bagian.
+    """
+    if lipatan is None:
+        lipatan = int(os.environ.get("CAPSTONE_LIPATAN", "0"))
+    r_tr, r_va, r_te = peran_lipatan(lipatan)
+    bagian = {"latih": _ambil(_jendela(LANGKAH_LATIH), r_tr)[2],
+              "val": _ambil(_jendela(LANGKAH_EVAL), r_va)[2],
+              "uji": _ambil(_jendela(LANGKAH_EVAL), r_te)[2]}
+    ringkas = {}
+    for nama, meta in bagian.items():
+        ringkas[nama] = {"blok": len(set(meta["blok"])), "kondisi": len(set(meta["kondisi"])), "jendela": len(meta["blok"])}
+    nama_ = list(bagian)
+    for i in range(3):
+        for j in range(i + 1, 3):
+            for kunci in ("blok", "kondisi", "ulangan"):
+                irisan = set(bagian[nama_[i]][kunci]) & set(bagian[nama_[j]][kunci])
+                assert not irisan, f"lipatan {lipatan}: {kunci} {sorted(irisan)} ada di {nama_[i]} dan {nama_[j]}"
+    # tiap bagian harus memuat keempat taraf mur
+    for nama in ("latih", "val", "uji"):
+        y = {"latih": _ambil(_jendela(LANGKAH_LATIH), r_tr), "val": _ambil(_jendela(LANGKAH_EVAL), r_va),
+             "uji": _ambil(_jendela(LANGKAH_EVAL), r_te)}[nama][1]
+        assert set(y.tolist()) == {0, 1, 2, 3}, f"{nama}: taraf mur tidak lengkap {sorted(set(y.tolist()))}"
+    return ringkas
 
-    X_train, y_train = X_trainval[idx_train], y_trainval[idx_train]
-    X_val, y_val = X_trainval[idx_val], y_trainval[idx_val]
 
-    return X_train, y_train, X_val, y_val, X_test, y_test
+if __name__ == "__main__":      # python -m src.protokol.data
+    for k in range(N_LIPATAN):
+        print(f"lipatan {k} (latih/val/uji = ulangan {peran_lipatan(k)}): OK", periksa_pemisahan(k))

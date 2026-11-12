@@ -1,7 +1,11 @@
 {
-  "sumber": "https://github.com/sains-data/capstone-dl-2026-starter",
+  "sumber": "SIMULASI (src/protokol/simulasi.py, seed 1008) - bukan data meja; ganti dengan sesi asli",
+  "sesi": "data/sesi-simulasi",
+  "sha256_label": "6d2f4bb138c02795bdf856f51b0d5b13ddb89cdeb1d5435081bb404339f2df00",
   "berkas": [
-    "data/rekaman_kipas_simulasi.npz"
+    "data/sesi-simulasi/label.csv",
+    "data/sesi-simulasi/imu.csv"
   ],
-  "catatan": "Sprint 0 (Protokol beku): Sinyal getaran kipas sesuai rancangan meja uji (16 kHz, 18 s, 4 PWM x 4 Beban x 9 Blok = 144 rekaman). Akan digantikan rekaman aktual meja uji setelah sesi operator 6 Nov."
+  "keluarkan": [],
+  "catatan": "Sprint 1: sesi simulasi IMU (96 kondisi = 12 blok x 8, 12 s, 400 Hz) mengikuti Rencana/Rencana.yaml. Buat ulang dengan: python -m src.protokol.simulasi --keluar data/sesi-simulasi"
 }
