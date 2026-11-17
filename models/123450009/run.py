@@ -1,4 +1,4 @@
-"""Kerangka run.py anggota. Salin folder ini menjadi models/<nim>/ lalu isi bagian MODEL.
+"""run.py jalur Transformer (patch encoder) untuk klasifikasi 4 kelas beban kipas.
 
     python models/<nim>/run.py --seed 1 [--final]
 """
@@ -19,14 +19,18 @@ from src.protokol import data  # noqa: E402  (protokol tim yang dibekukan)
 NIM = Path(__file__).resolve().parent.name     # nama folder = NIM
 JALUR = "trf"                                   # cnn | tl | rnn | trf | ae
 
-N_KELAS = 4          # klasifikasi 4 kelas (0, 1, 2, 3 mur)
+# Hyperparameter awal (catat pencarian dan alasannya di catatan.md)
+N_KELAS = 4
 PANJANG_PATCH = 20   # 400 sampel / 20 = 20 patch per jendela
 D_MODEL = 64
 N_HEAD = 4
 N_LAYER = 2
-EPOCH = 3
+DROPOUT = 0.1
+EPOCH = 8
 BATCH = 64
 LR = 1e-3
+WEIGHT_DECAY = 0.01
+BATAS_DETIK = 18 * 60    # sesuaikan dengan anggaran resmi per run
 
 
 def buat_model(n_kanal: int, panjang: int):
@@ -42,7 +46,7 @@ def buat_model(n_kanal: int, panjang: int):
             self.pos = nn.Parameter(torch.randn(1, self.n_patch + 1, D_MODEL) * 0.02)
             lapis = nn.TransformerEncoderLayer(
                 d_model=D_MODEL, nhead=N_HEAD, dim_feedforward=4 * D_MODEL,
-                dropout=0.1, batch_first=True, norm_first=True)
+                dropout=DROPOUT, batch_first=True, norm_first=True)
             self.encoder = nn.TransformerEncoder(
                 lapis, num_layers=N_LAYER, enable_nested_tensor=False)
             self.norm = nn.LayerNorm(D_MODEL)
@@ -51,11 +55,11 @@ def buat_model(n_kanal: int, panjang: int):
         def forward(self, x):                      # x: (B, waktu, kanal)
             B = x.shape[0]
             x = x[:, : self.n_patch * PANJANG_PATCH]
-            x = x.reshape(B, self.n_patch, -1)     # (B, n_patch, PANJANG_PATCH * kanal)
+            x = x.reshape(B, self.n_patch, -1)
             x = self.proj(x)
             x = torch.cat([self.cls.expand(B, -1, -1), x], dim=1) + self.pos
             x = self.encoder(x)
-            return self.kepala(self.norm(x[:, 0]))  # keluaran token CLS
+            return self.kepala(self.norm(x[:, 0]))
 
     return TransformerPatch()
 
@@ -63,36 +67,59 @@ def buat_model(n_kanal: int, panjang: int):
 def latih_dan_prediksi(seed: int, final: bool) -> tuple[np.ndarray, np.ndarray | None]:
     """Kembalikan (pred_val, pred_test|None)."""
     import torch
+    import torch.nn.functional as F
 
     torch.manual_seed(seed)
     np.random.seed(seed)
     Xtr, ytr, Xva, _, Xte, _ = data.muat()
 
-    def ke_tensor(X):
+    def ke_np(X):
         X = np.asarray(X, dtype=np.float32)        # harapan (N, waktu, kanal)
-        if X.shape[1] == 6 and X.shape[2] != 6:    # kalau (N, kanal, waktu), balik urutannya
+        if X.shape[1] == 6 and X.shape[2] != 6:
             X = X.transpose(0, 2, 1)
-        return torch.tensor(X)
+        return X
 
-    X, y = ke_tensor(Xtr), torch.tensor(np.asarray(ytr), dtype=torch.long)
+    Xtr_np = ke_np(Xtr)
+    mean = Xtr_np.mean(axis=(0, 1)).reshape(1, 1, -1)   # statistik dari data latih saja
+    std = Xtr_np.std(axis=(0, 1)).reshape(1, 1, -1) + 1e-8
+
+    def ke_tensor(X):
+        return torch.from_numpy((ke_np(X) - mean) / std)
+
+    X = ke_tensor(Xtr)
+    y = torch.from_numpy(np.asarray(ytr, dtype=np.int64))
     assert int(y.max()) < N_KELAS, "label di luar 0..3, cek data.muat()"
     model = buat_model(n_kanal=X.shape[2], panjang=X.shape[1])
-    opt = torch.optim.AdamW(model.parameters(), lr=LR, weight_decay=0.01)  # alasan: tulis di catatan.md
+    opt = torch.optim.AdamW(model.parameters(), lr=LR, weight_decay=WEIGHT_DECAY)
 
-    model.train()
-    for _ in range(EPOCH):
-        urut = torch.randperm(len(X))
-        for i in range(0, len(X), BATCH):
+    t0 = time.time()
+    n = len(X)
+    for ep in range(EPOCH):
+        model.train()
+        urut = torch.randperm(n)
+        total = 0.0
+        for i in range(0, n, BATCH):
             idx = urut[i:i + BATCH]
             opt.zero_grad()
-            loss = torch.nn.functional.cross_entropy(model(X[idx]), y[idx])
+            loss = F.cross_entropy(model(X[idx]), y[idx])
             loss.backward()
             opt.step()
+            total += loss.item() * len(idx)
+        print(f"epoch {ep + 1}/{EPOCH}  loss={total / n:.4f}", flush=True)
+        if time.time() - t0 > BATAS_DETIK:
+            print("Batas waktu tercapai, pelatihan dihentikan.", flush=True)
+            break
 
-    model.eval()
-    with torch.no_grad():
-        pred_val = model(ke_tensor(Xva)).argmax(1).numpy()
-        pred_test = model(ke_tensor(Xte)).argmax(1).numpy() if final and Xte is not None else None
+    def prediksi(A):
+        model.eval()
+        hasil = []
+        with torch.no_grad():
+            for i in range(0, len(A), 64):
+                hasil.append(model(ke_tensor(A[i:i + 64])).argmax(1).numpy())
+        return np.concatenate(hasil).astype(np.int64)
+
+    pred_val = prediksi(Xva)
+    pred_test = prediksi(Xte) if final and Xte is not None and len(Xte) > 0 else None
     return pred_val, pred_test
 
 
