@@ -28,7 +28,7 @@ epoch 25/30 loss=0.0372 val_macro_f1=0.9886 lr=2.50e-04
 epoch 26/30 loss=0.0340 val_macro_f1=0.9858 lr=1.25e-04
 epoch 27/30 loss=0.0331 val_macro_f1=0.9886 lr=1.25e-04
 epoch 28/30 loss=0.0320 val_macro_f1=0.9829 lr=1.25e-04
-{"val_acc": 1.0, "val_macro_f1": 1.0} ΓåÆ results\122450041\metrics.json
+{"val_acc": 1.0, "val_macro_f1": 1.0} -> results\122450041\metrics.json
 [early-stop] tidak membaik 8 epoch; kembali ke epoch 20
 [selesai] epoch terbaik=20 val_macro_f1=1.0000
 [output] pred_val=(352,) durasi=513.4 s -> results\122450041
