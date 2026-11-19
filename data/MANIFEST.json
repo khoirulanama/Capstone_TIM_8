@@ -1,11 +1,5 @@
 {
-  "sumber": "SIMULASI (src/protokol/simulasi.py, seed 1008) - bukan data meja; ganti dengan sesi asli",
-  "sesi": "data/sesi-simulasi",
-  "sha256_label": "6d2f4bb138c02795bdf856f51b0d5b13ddb89cdeb1d5435081bb404339f2df00",
-  "berkas": [
-    "data/sesi-simulasi/label.csv",
-    "data/sesi-simulasi/imu.csv"
-  ],
-  "keluarkan": [],
-  "catatan": "Sprint 1: sesi simulasi IMU (96 kondisi = 12 blok x 8, 12 s, 400 Hz) mengikuti Rencana/Rencana.yaml. Buat ulang dengan: python -m src.protokol.simulasi --keluar data/sesi-simulasi"
+  "sumber": "../../sesi-20261116-182908 (rekaman meja uji aktual Tim 8)",
+  "berkas": ["data/rekaman_kipas_aktual.npz"],
+  "catatan": "Audio primer 48 kHz; label dari label.csv; jendela mono 400 Hz sesudah anti-alias resampling. File NPZ dibuat oleh src.protokol.prepare_audio.py dan tidak di-commit."
 }

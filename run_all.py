@@ -32,6 +32,12 @@ def main() -> None:
 
     if not a.tanpa_baseline:
         jalankan([sys.executable, "-m", "src.common.baseline", "--seed", str(a.seeds[0])])
+    rf_ringkas: list[dict] = []
+    rf_script = AKAR / "models" / "122450039" / "non_dl.py"
+    if rf_script.exists():
+        for s in a.seeds:
+            jalankan([sys.executable, str(rf_script), "--seed", str(s)])
+            rf_ringkas.append(json.loads((AKAR / "results" / "non_dl" / "metrics.json").read_text("utf-8")))
     anggota = sorted(p for p in (AKAR / "models").iterdir() if p.is_dir() and (p / "run.py").exists()
                      and p.name != "TEMPLATE" and (a.hanya is None or p.name in a.hanya))
     ringkas: dict[str, list[dict]] = {}
@@ -48,12 +54,16 @@ def main() -> None:
     bl = AKAR / "results" / "baseline" / "metrics.json"
     if bl.exists():
         h = json.loads(bl.read_text("utf-8")); mt = h["metrik"]
-        baris.append(f"| baseline | mlp dosen | {h['seed']} | {mt['val_acc']:.4f} | {mt['val_macro_f1']:.4f} | — | {h.get('durasi_detik', 0):.0f} | {h.get('perangkat', '')} |")
+        baris.append(f"| baseline | softmax NumPy | {h['seed']} | {mt['val_acc']:.4f} | {mt['val_macro_f1']:.4f} | — | {h.get('durasi_detik', 0):.0f} | {h.get('perangkat', '')} |")
+    for h in rf_ringkas:
+        mt = h["metrik"]
+        baris.append(f"| non_dl | random_forest | {h['seed']} | {mt['val_acc']:.4f} | {mt['val_macro_f1']:.4f} | — | {h.get('durasi_detik', 0):.0f} | {h.get('perangkat', '')} |")
     for nim, daftar in ringkas.items():
         for h in daftar:
             mt = h["metrik"]
+            test_acc = f"{mt['test_acc']:.4f}" if "test_acc" in mt else "—"
             baris.append(f"| {nim} | {h.get('model', '')} | {h['seed']} | {mt['val_acc']:.4f} | {mt['val_macro_f1']:.4f} | "
-                         f"{mt.get('test_acc', float('nan')):.4f} | {h.get('durasi_detik', 0):.0f} | {h.get('perangkat', '')} |")
+                         f"{test_acc} | {h.get('durasi_detik', 0):.0f} | {h.get('perangkat', '')} |")
     (AKAR / "reports").mkdir(exist_ok=True)
     out = AKAR / "reports" / "hasil_komparasi.md"
     out.write_text("# Hasil komparasi (dibangkitkan run_all.py)\n\n" + "\n".join(baris) + "\n", encoding="utf-8")

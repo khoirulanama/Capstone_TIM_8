@@ -77,6 +77,8 @@ def latih_dan_prediksi(seed: int, final: bool) -> tuple[np.ndarray, np.ndarray |
         X = np.asarray(X, dtype=np.float32)        # harapan (N, waktu, kanal)
         if X.shape[1] == 6 and X.shape[2] != 6:
             X = X.transpose(0, 2, 1)
+        if X.ndim == 2:                            # audio mono [N, waktu]
+            X = X[..., None]
         return X
 
     Xtr_np = ke_np(Xtr)
