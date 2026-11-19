@@ -1,8 +1,9 @@
 """Jalur RNN (GRU) untuk diagnosis beban tak seimbang kipas dari sinyal getaran.
 
 Kontrak tugas (lihat ``src/protokol/data.py``):
-    Input  : X [N, 400]  -> diubah menjadi [N, 400, 1]
-             400 Hz, jendela 1 detik (400 sampel), satu kanal getaran.
+    Input  : X [N, 6, 400] -> diubah menjadi [N, 400, 6]
+             400 Hz, jendela 1 detik (400 sampel), enam kanal IMU
+             (ax, ay, az, gx, gy, gz) yang sudah dinormalisasi per kanal.
     Output : klasifikasi 4 kelas (0--3 mur) -> logits [N, 4],
              prediksi label integer [N].
 
@@ -34,7 +35,7 @@ from src.protokol import data  # noqa: E402  (protokol tim yang dibekukan)
 NIM = Path(__file__).resolve().parent.name     # nama folder = NIM
 JALUR = "rnn"
 PANJANG_JENDELA = 400                          # 400 Hz x 1 detik
-N_KANAL = 1                                    # satu sumbu getaran
+N_KANAL = 6                                    # ax, ay, az, gx, gy, gz
 
 
 # --------------------------------------------------------------------------- #
@@ -55,23 +56,30 @@ def atur_seed(seed: int) -> None:
 # Data
 # --------------------------------------------------------------------------- #
 def siapkan_urut(X: np.ndarray, nama: str) -> np.ndarray:
-    """Ubah X [N, 400] menjadi [N, 400, 1] dan hilangkan offset DC per jendela."""
+    """Ubah X [N, 6, 400] menjadi urutan [N, 400, 6] untuk GRU.
+
+    Normalisasi per kanal sudah dilakukan ``data.muat()`` memakai statistik data
+    latih saja. Offset DC tidak dibuang karena komponen gravitasi pada akselerometer
+    membawa informasi orientasi yang sah.
+    """
     X = np.asarray(X, dtype=np.float32)
     if X.ndim == 2:
         X = X[..., None]
-    if X.ndim != 3 or X.shape[1:] != (PANJANG_JENDELA, N_KANAL):
+    if X.ndim != 3:
+        raise ValueError(f"{nama}: bentuk {X.shape}, seharusnya [N, 6, {PANJANG_JENDELA}]")
+    if X.shape[1] == N_KANAL and X.shape[2] == PANJANG_JENDELA:
+        X = np.transpose(X, (0, 2, 1))          # (N, kanal, waktu) -> (N, waktu, kanal)
+    if X.shape[1:] != (PANJANG_JENDELA, N_KANAL):
         raise ValueError(
             f"{nama}: bentuk {X.shape}, seharusnya [N, {PANJANG_JENDELA}, {N_KANAL}]"
         )
-    # Getaran adalah sinyal AC; rata-rata jendela (DC) dibuang agar model fokus
-    # pada pola osilasi, bukan bias sensor.
-    return X - X.mean(axis=1, keepdims=True)
+    return X
 
 
 def normalisasi(
     Xtr: np.ndarray, Xva: np.ndarray, Xte: np.ndarray | None
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray | None, float, float]:
-    """Z-score memakai statistik data latih saja (mencegah kebocoran data).
+    """Z-score global tambahan (data sudah dinormalisasi per kanal oleh protokol).
 
     Skala global dipertahankan: amplitudo getaran justru merupakan ciri utama
     ketidakseimbangan, sehingga normalisasi tidak dilakukan per jendela.
