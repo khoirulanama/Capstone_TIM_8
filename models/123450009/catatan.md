@@ -26,5 +26,17 @@ dan weight decay akan diuji di ablation.
 Belum dikerjakan. Rencana: (1) panjang patch 10 / 20 / 40, (2) jumlah lapis
 1 / 2 / 4, (3) token CLS dibanding rata-rata patch.
 
+## Hasil RF (pembanding non-DL, #8)
+
+**Baseline RF (seed 1, data primer meja, 16 Nov 2026):**
+- val_acc = 0.241
+- val_macro_f1 = 0.222
+
+Hasil ini mendekati tebakan acak (0.25 untuk 4 kelas). Dari pemeriksaan RMS getaran
+sebelumnya, amplitudo '0 mur' sampai '3 mur' pada kecepatan kipas yang sama ternyata
+hampir sama — jadi fitur statistik dasar (RMS, puncak, kurtosis) kemungkinan tidak
+cukup membedakan kelas beban. Sinyal pembeda mungkin ada di domain frekuensi
+(energi pita FFT), yang sudah dimasukkan sebagai fitur tapi belum dominan.
+
 ## Hasil 3 seed konfigurasi akhir
 Belum ada. Menunggu data meja dan pelatihan (seed 1, 2, 3).
