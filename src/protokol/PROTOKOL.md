@@ -1,32 +1,39 @@
-# Protokol Evaluasi Tim 8 — Diagnosis Beban Tak Seimbang Kipas dari Getaran
+# Protokol Evaluasi Tim 8 — Klasifikasi Beban Tak Seimbang Kipas dari Audio
 
-Diisi Penjaga Data & Evaluasi pada Sprint 0, digabung ke `main` lewat *pull request* yang disetujui pembimbing, lalu **dibekukan**. Perubahan setelah itu hanya lewat *pull request* baru yang disetujui pembimbing.
+Dokumen ini memperbarui rancangan Sprint 0 setelah rekaman aktual sesi
+`sesi-20261116-182908` tersedia. Perubahan protokol tetap perlu ditinjau dan
+disetujui pembimbing sebelum dijadikan protokol resmi.
 
 | Butir | Isi |
 |---|---|
-| Kasus (dari kartu Kasus tim) | Diagnosis beban tak seimbang kipas dari getaran: klasifikasi 4 kelas dari getaran kipas 400 Hz, jendela 1 s, dengan pembanding non-deep-learning dan batasan ukuran/latensi untuk dipasang kembali di laptop meja. |
-| Sumber dataset | Rekaman meja uji tim (mikrofon 16 kHz), variasi PWM [100, 160, 220, 255] dan beban [0, 1, 2, 3 mur], ulangan 3 × 3 blok, 18 s per kondisi. (Sprint 0: simulasi terstruktur di `data/rekaman_kipas_simulasi.npz`) |
-| Jenis tugas (`TUGAS`) | klasifikasi |
-| Target / label | 4 kelas (0: 0 mur, 1: 1 mur, 2: 2 mur, 3: 3 mur pada bilah kipas) |
-| Ukuran data latih / validasi / uji | 1469 sampel jendela / 163 sampel jendela / 816 sampel jendela (jendela 1 detik @ 400 Hz) |
-| Cara split | Group Split berbasis Sesi/Partisipan: Sesi 1 & 2 untuk Train-Val, Sesi 3 untuk Uji. Split latih/val menggunakan `split.indeks` seed 2026, porsi validasi 10%. |
-| Metrik utama untuk komparasi | macro-F1 (klasifikasi) dan akurasi; komparasi akhir: rata-rata ± simpangan baku dari 3 seed konfigurasi akhir; ukuran ONNX (KB) dan latensi inferensi (ms) di laptop meja |
-| Praproses yang sama untuk semua model | 1. Pembuangan 1 detik pertama tiap rekaman kondisi (transien awal dibuang).<br>2. Desimasi/resampling frekuensi dari 16 kHz ke 400 Hz.<br>3. Pemotongan jendela geser 1 s (400 titik sampel).<br>4. Normalisasi/standarisasi fitur dihitung HANYA dari data latih (*fit on train only*). |
-| Anggaran komputasi per run | ≤ 20 menit pelatihan per run di CPU laptop (atau GPU lokal/Colab bila didokumentasikan); catat `--durasi` dan `--perangkat`. |
-| Evaluasi data uji | Sekali, oleh Penjaga Data, pada sprint terakhir (`--final`). |
-| `data_hash` saat dibekukan | `b465868cf947149c235815666db0cc68` (dari `results/baseline/metrics.json`) |
+| Kasus | Klasifikasi empat kondisi beban kipas (0–3 mur) dari audio meja uji. Audio adalah pengukuran akustik sebagai proksi kondisi kipas, bukan pengukuran akselerasi/getaran langsung. |
+| Data primer | 144 interval berlabel; 66 berkas WAV mono, laju aktual 48 kHz. Sumber label dan waktu: `label.csv`; indeks waktu/berkas: `audio_index.csv`. Variabel pendukung ada di `imu.csv`, `aktuator.csv`, `daya.csv`, `lingkungan.csv`, dan `digital.csv`. |
+| Masukan model | Audio mono, jendela 1 detik pada 400 Hz (400 sampel). Potong 1 detik awal tiap interval untuk transien, lalu resample 48 kHz ke 400 Hz dengan filter anti-alias (`scipy.signal.resample_poly`). Pemotongan mengambil audio berdasarkan waktu host dan dapat menyambung dua WAV bila interval melintasi batas berkas. |
+| Target | `beban_kipas`: 0, 1, 2, atau 3 mur. |
+| Split | Group split berdasarkan `ulangan_blok`: ulangan 1 untuk train, ulangan 2 untuk validasi, ulangan 3 untuk test. Seluruh jendela dari satu ulangan tetap pada split yang sama; test tidak digunakan untuk pemilihan model. Seed split tidak mengubah penetapan grup. |
+| Ukuran yang diharapkan | 816 jendela per split (17 jendela × 48 interval berlabel per ulangan); total 2448. Distribusi kelas harus dilaporkan dari hasil ekstraksi sebelum pelatihan. |
+| Normalisasi | Parameter normalisasi dihitung hanya dari data train. Semua jalur menggunakan split dan data yang sama. |
+| Metrik | Macro-F1 (utama), akurasi (sekundernya). Sprint 1: minimal satu seed per jalur, pembanding non-DL, dan `metrics.json` valid. Sprint 2: tiga seed, penyetelan, ablation, dan komparasi lengkap. |
+| Pembanding non-DL | Fitur statistik domain waktu dan energi beberapa pita FFT, diikuti Random Forest. |
+| Evaluasi test | Hanya saat tahap final, dikoordinasikan Penjaga Data. Sampai itu, test dipakai untuk pemeriksaan teknis split saja; jangan hitung atau gunakan metrik test untuk memilih model. |
+| Mode simulasi | `CAPSTONE_DATA_MODE=simulasi` tersedia untuk latihan alur sebelum sesi primer. Hasil simulasi bukan hasil penelitian dan tidak boleh dibandingkan dengan metrik aktual. |
 
----
+## Jalur model dan DoD
 
-### Pembagian Jalur Model Tim 8 (4 Anggota & Baseline):
-1. **Jalur CNN**: 1D-CNN untuk menangkap pola lokal getaran domain waktu.
-2. **Jalur RNN**: LSTM / GRU untuk pemodelan sekuensial deret waktu getaran.
-3. **Jalur Transformer**: Self-Attention Transformer encoder untuk sinyal 1D.
-4. **Jalur Autoencoder (AE)**: Pembelajaran representasi nir-terawasi lalu klasifikasi kondisi kipas.
-5. **Pembanding Non-DL**: Ekstraksi fitur statistik + FFT (RMS, puncak, kurtosis, energi pita frekuensi) + Random Forest Classifier.
+Jalur tim: CNN, RNN, Transformer, dan Autoencoder; pembanding non-DL Random Forest.
+Untuk Demo Sprint 1 (11 hari persiapan setelah data sesi lengkap): setiap jalur
+dilatih pada data primer dengan minimal satu seed, pembanding berjalan, dan berkas
+`metrics.json` valid. Tiga seed, tuning, serta perbandingan lengkap dikerjakan pada
+Sprint 2 (28 November–12 Desember).
 
-### Jadwal Meja Uji:
-* **Sesi Operator (Perekaman Data Aktual)**: Jumat, 6 November 2026 (08.00–09.00).
-* **Uji Purwarupa Sprint 2**: Selasa, 17 November 2026 (11.30–12.00).
+## Reproduksi
 
-Disetujui pembimbing pada: *(tautan pull request ke main)*
+```bash
+python -m src.protokol.prepare_audio --session-dir ../sesi-20261116-182908
+python models/122450039/run.py --seed 1
+python models/122450039/non_dl.py --seed 1
+```
+
+`rekaman_kipas_aktual.npz` adalah artefak lokal yang dihasilkan dari berkas sesi;
+data mentah dan NPZ tidak di-commit. Rekaman aktual berjalan pada 48 kHz meskipun
+rencana awal menyebut 16 kHz; parameter pemrosesan di atas mengikuti laju aktual.

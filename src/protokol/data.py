@@ -1,88 +1,65 @@
-"""Pemuat data kasus tim: Diagnosis Beban Tak Seimbang Kipas dari Getaran.
-Protokol Sprint 0 (Tim 8).
+"""Pemuat jendela audio Tim 8 dengan split berdasarkan ulangan eksperimen.
 
-Kontrak yang dipakai penilai dan baseline starter:
-    TUGAS = "klasifikasi"
-    muat() -> (X_train, y_train, X_val, y_val, X_test, y_test)
-
-Spesifikasi Data & Pemrosesan:
-- Input: Sinyal getaran kipas 400 Hz, jendela 1 detik (400 sampel per jendela).
-- Target: 4 kelas (0, 1, 2, 3 mur pada bilah kipas).
-- Pemotongan: 1 detik pertama tiap kondisi dibuang (transien awal).
-- Resampling: 16 kHz -> 400 Hz (faktor desimasi = 40).
-- Jendela: 1 s (400 sampel) tanpa tumpang tindih (stride 400).
-- Pembagian data: Group-based split berdasarkan sesi/blok eksperimen.
-  * Sesi 1 & 2 -> Pembagian Train & Validasi menggunakan split.indeks (seed 2026).
-  * Sesi 3 -> Test set (disimpan untuk evaluasi final Sprint terakhir).
+Jalankan ``python -m src.protokol.prepare_audio`` sekali untuk menyiapkan data
+aktual. ``CAPSTONE_DATA_MODE=simulasi`` memilih generator Sprint 0 secara eksplisit.
 """
 from __future__ import annotations
 
+import os
 from pathlib import Path
+
 import numpy as np
 
-from src.common import manifest, split
+from src.common import manifest
 
 TUGAS = "klasifikasi"
+MODE = os.environ.get("CAPSTONE_DATA_MODE", "aktual").strip().lower()
+
+
+def _bagi_aktual(X: np.ndarray, y: np.ndarray, ulangan: np.ndarray):
+    # Tiga ulangan adalah unit independen: 1=train, 2=validation, 3=test.
+    # Jendela dari rekaman/ulangan yang sama tidak pernah tersebar antar-split.
+    masks = [ulangan == i for i in (1, 2, 3)]
+    if not all(mask.any() for mask in masks):
+        raise ValueError("Data aktual harus memiliki ulangan_blok 1, 2, dan 3.")
+    return tuple(v for mask in masks for v in (X[mask], y[mask]))
 
 
 def muat():
-    """Memuat sinyal getaran kipas, memotong jendela 1 s (400 Hz), dan membagi train/val/test."""
+    """Mengembalikan X_train, y_train, X_val, y_val, X_test, y_test."""
+    if MODE == "simulasi":
+        manifest.baca()
+        path = manifest.AKAR / "data/rekaman_kipas_simulasi.npz"
+        if not path.exists():
+            raise FileNotFoundError(f"Data simulasi tidak ditemukan: {path}")
+        with np.load(path) as arsip:
+            sinyal, beban, sesi = arsip["sinyal"], arsip["beban"], arsip["sesi"]
+            sr = int(arsip["sr"])
+        ratio = sr // 400
+        awal = sinyal[:, sr:]
+        n = awal.shape[1] // ratio
+        x400 = awal[:, :n * ratio].reshape(len(awal), n, ratio).mean(-1)
+        jendela = x400.shape[1] // 400
+        X = np.stack([x400[i, j*400:(j+1)*400]
+                      for i in range(len(x400)) for j in range(jendela)]).astype(np.float32)
+        y = np.repeat(beban, jendela).astype(np.int64)
+        s = np.repeat(sesi, jendela)
+        masks = [s == i for i in (1, 2, 3)]
+        if not all(mask.any() for mask in masks):
+            raise ValueError("Data simulasi harus memiliki sesi 1, 2, dan 3.")
+        return tuple(v for mask in masks for v in (X[mask], y[mask]))
+    if MODE != "aktual":
+        raise ValueError("CAPSTONE_DATA_MODE harus 'aktual' atau 'simulasi'.")
+
     m = manifest.baca()
-    data_path = manifest.AKAR / m["berkas"][0]
-    if not data_path.exists():
-        raise FileNotFoundError(f"Berkas dataset {data_path} tidak ditemukan.")
-
-    data = np.load(data_path)
-    sinyal = data["sinyal"]       # shape: [N_kondisi, N_sampel]
-    beban = data["beban"]         # shape: [N_kondisi] (0, 1, 2, 3 mur)
-    sesi = data["sesi"]           # shape: [N_kondisi] (1, 2, 3)
-    sr_asli = int(data["sr"])     # 16000
-
-    sr_target = 400
-    faktor_desimasi = sr_asli // sr_target  # 16000 // 400 = 40
-    jendela_titik = sr_target               # 400 sampel per detik
-
-    # 1 detik pertama dibuang (1 * sr_asli sampel)
-    awal_potong = sr_asli
-    sinyal_bersih = sinyal[:, awal_potong:]  # 17 detik tersisa per kondisi
-
-    # Resampling sederhana dengan decimation rata-rata blok / subsampling
-    # Bentuk: [N_kondisi, durasi_detik * 400, 40] -> mean over 40
-    n_kondisi, n_sampel = sinyal_bersih.shape
-    n_resample = n_sampel // faktor_desimasi
-    sinyal_resampled = sinyal_bersih[:, : n_resample * faktor_desimasi].reshape(
-        n_kondisi, n_resample, faktor_desimasi
-    ).mean(axis=-1)  # shape: [n_kondisi, n_resample] pada 400 Hz
-
-    # Potong menjadi jendela 1 detik (400 sampel)
-    n_jendela_per_kondisi = n_resample // jendela_titik  # 17 jendela per rekaman
-
-    windows_all = []
-    labels_all = []
-    sesi_all = []
-
-    for i in range(n_kondisi):
-        for j in range(n_jendela_per_kondisi):
-            w = sinyal_resampled[i, j * jendela_titik : (j + 1) * jendela_titik]
-            windows_all.append(w)
-            labels_all.append(beban[i])
-            sesi_all.append(sesi[i])
-
-    X = np.array(windows_all, dtype=np.float32)  # [N_total, 400]
-    y = np.array(labels_all, dtype=np.int64)     # [N_total]
-    s = np.array(sesi_all, dtype=np.int32)
-
-    # Pisahkan Sesi 3 sebagai Test Set (Group split)
-    mask_test = (s == 3)
-    mask_trainval = ~mask_test
-
-    X_trainval, y_trainval = X[mask_trainval], y[mask_trainval]
-    X_test, y_test = X[mask_test], y[mask_test]
-
-    # Split train/val menggunakan split beku starter (seed 2026, 10% val)
-    idx_train, idx_val = split.indeks(len(X_trainval), porsi_val=0.1, seed=split.SEED_SPLIT)
-
-    X_train, y_train = X_trainval[idx_train], y_trainval[idx_train]
-    X_val, y_val = X_trainval[idx_val], y_trainval[idx_val]
-
-    return X_train, y_train, X_val, y_val, X_test, y_test
+    path = manifest.AKAR / m["berkas"][0]
+    if not path.exists():
+        raise FileNotFoundError(
+            f"Jendela audio aktual belum disiapkan ({path}). Jalankan "
+            "python -m src.protokol.prepare_audio --session-dir <folder-sesi>."
+        )
+    with np.load(path) as arsip:
+        X, y, ulangan = arsip["X"], arsip["y"], arsip["ulangan_blok"]
+    X, y = X.astype(np.float32, copy=False), y.astype(np.int64, copy=False)
+    hasil = _bagi_aktual(X, y, ulangan)
+    return hasil
