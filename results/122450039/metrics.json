@@ -3,7 +3,7 @@
     "val_acc": 0.368873,
     "val_macro_f1": 0.294255
   },
-  "seed": 3,
+  "seed": 1,
   "data_hash": "1ff2f8194134ce9c2023b9faa52d9f88",
   "perangkat": "cpu laptop",
   "model": "cnn",
