@@ -1,7 +1,5 @@
 {
-  "sumber": "https://github.com/sains-data/capstone-dl-2026-starter",
-  "berkas": [
-    "data/rekaman_kipas_simulasi.npz"
-  ],
-  "catatan": "Sprint 0 (Protokol beku): Sinyal getaran kipas sesuai rancangan meja uji (16 kHz, 18 s, 4 PWM x 4 Beban x 9 Blok = 144 rekaman). Akan digantikan rekaman aktual meja uji setelah sesi operator 6 Nov."
+  "sumber": "../../sesi-20261116-182908 (rekaman meja uji aktual Tim 8)",
+  "berkas": ["data/rekaman_kipas_aktual.npz"],
+  "catatan": "Audio primer 48 kHz; label dari label.csv; jendela mono 400 Hz sesudah anti-alias resampling. File NPZ dibuat oleh src.protokol.prepare_audio.py dan tidak di-commit."
 }

@@ -31,3 +31,18 @@ Eksperimen awal pada data simulasi getaran kipas (1 detik, 400 Hz):
   - `val_macro_f1`: 1.0
   - `durasi_detik`: ~15.9 detik
   - `data_hash`: `b465868cf947149c235815666db0cc68`
+
+## 6. Validasi awal pada rekaman aktual (Demo Sprint 1)
+
+Angka pada bagian ini berasal dari audio primer sesi `sesi-20261116-182908`, bukan
+eksperimen simulasi di atas. Audio dipotong menurut timestamp label, dibuang 1 detik
+awal, lalu di-resample dari 48 kHz ke 400 Hz dengan filter anti-alias. Split dilakukan
+berdasarkan `ulangan_blok` (1=train, 2=validasi, 3=test); test belum dievaluasi.
+
+| Seed | Val Acc | Val Macro-F1 | Durasi | Data hash |
+|---|---:|---:|---:|---|
+| 1 | 0.368873 | 0.294255 | 6.5 s | `1ff2f8194134ce9c2023b9faa52d9f88` |
+
+Ini satu run awal untuk DoD Sprint 1, bukan estimasi akhir. Belum ada tuning,
+ablation, atau tiga seed. Audio adalah pengukuran akustik; hasil tidak boleh disebut
+pengukuran getaran langsung.
