@@ -1,22 +1,13 @@
 {
   "metrik": {
-<<<<<<< HEAD
     "val_acc": 0.430147,
     "val_macro_f1": 0.363409
-=======
-    "val_acc": 0.371324,
-    "val_macro_f1": 0.277147
->>>>>>> 02086f3b87c02b9d80c3e79e888abce18040ed49
   },
   "seed": 3,
-  "data_hash": "1ff2f8194134ce9c2023b9faa52d9f88",
+  "data_hash": "e952a9c409e0cba3252bf3ec1e64c656",
   "perangkat": "cpu laptop",
   "model": "cnn",
   "n_val": 816,
   "n_test": 0,
-<<<<<<< HEAD
   "durasi_detik": 37.0
-=======
-  "durasi_detik": 7.2
->>>>>>> 02086f3b87c02b9d80c3e79e888abce18040ed49
 }
