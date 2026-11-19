@@ -2,8 +2,8 @@
 
     python models/123450010/run.py --seed 1 [--final] [--lipatan 0]
 
-Gagasan: autoencoder 1D-konvolusi dipralatih TANPA label untuk merekonstruksi jendela getaran
-(6 kanal x 400 sampel), lalu vektor laten z dipakai oleh kepala linear kecil untuk
+Gagasan: autoencoder 1D-konvolusi dipralatih TANPA label untuk merekonstruksi jendela primer
+(audio mono atau kanal IMU x 400 sampel), lalu vektor laten z dipakai oleh kepala linear untuk
 mengklasifikasikan 0/1/2/3 mur (representasi -> klasifikasi, jalur 'ae' di README).
 
 Kontrak starter dipenuhi: data lewat ``src.protokol.data.muat()``, seed dari ``--seed``, prediksi
@@ -38,15 +38,15 @@ BAWAAN = dict(latent=16, derau=0.10, epoch_ae=60, epoch_kepala=150, lr=1e-3, wd=
               dropout=0.2, pralatih=True, finetune=True)
 
 
-def bangun(latent: int, dropout: float):
-    """Encoder, decoder, kepala. Bentuk: (B,6,400) -> z (B,latent) -> rekonstruksi (B,6,400)."""
+def bangun(latent: int, dropout: float, kanal: int = 1):
+    """Encoder, decoder, kepala. Bentuk: (B,kanal,400) -> z -> rekonstruksi."""
     import torch.nn as nn
 
     class AE(nn.Module):
         def __init__(self, d: int):
             super().__init__()
             self.enc = nn.Sequential(
-                nn.Conv1d(6, 16, 7, 2, 3), nn.BatchNorm1d(16), nn.ReLU(),     # 400 -> 200
+                nn.Conv1d(kanal, 16, 7, 2, 3), nn.BatchNorm1d(16), nn.ReLU(), # 400 -> 200
                 nn.Conv1d(16, 32, 7, 2, 3), nn.BatchNorm1d(32), nn.ReLU(),    # 200 -> 100
                 nn.Conv1d(32, 64, 5, 2, 2), nn.BatchNorm1d(64), nn.ReLU(),    # 100 -> 50
                 nn.Flatten(), nn.Linear(64 * 50, d))
@@ -55,7 +55,7 @@ def bangun(latent: int, dropout: float):
                 nn.ReLU(),
                 nn.ConvTranspose1d(64, 32, 4, 2, 1), nn.BatchNorm1d(32), nn.ReLU(),   # 50 -> 100
                 nn.ConvTranspose1d(32, 16, 4, 2, 1), nn.BatchNorm1d(16), nn.ReLU(),   # 100 -> 200
-                nn.ConvTranspose1d(16, 6, 4, 2, 1))                                   # 200 -> 400
+                nn.ConvTranspose1d(16, kanal, 4, 2, 1))                                # 200 -> 400
 
         def forward(self, x):
             z = self.enc(x)
@@ -100,9 +100,18 @@ def latih_dan_prediksi(seed: int, final: bool, cfg: dict | None = None):
     torch.set_num_threads(max(1, min(4, os.cpu_count() or 1)))
     g = torch.Generator().manual_seed(seed)
     Xtr, ytr, Xva, yva, Xte, _ = data.muat()
+    if Xtr.ndim == 2:                               # audio mono [N,400]
+        Xtr, Xva = Xtr[:, None, :], Xva[:, None, :]
+        if Xte is not None:
+            Xte = Xte[:, None, :]
+    mu, sd = float(Xtr.mean()), float(Xtr.std()) + 1e-8
+    Xtr, Xva = (Xtr - mu) / sd, (Xva - mu) / sd
+    if Xte is not None:
+        Xte = (Xte - mu) / sd
     Xtr, Xva = torch.tensor(Xtr), torch.tensor(Xva)
+    Xte_t = torch.tensor(Xte) if Xte is not None else None
     ytr_t = torch.tensor(ytr)
-    ae, kepala = bangun(c["latent"], c["dropout"])
+    ae, kepala = bangun(c["latent"], c["dropout"], kanal=Xtr.shape[1])
 
     info = {"rekon_val_mse": None}
     if c["pralatih"]:
@@ -145,7 +154,7 @@ def latih_dan_prediksi(seed: int, final: bool, cfg: dict | None = None):
     model = Klasifikasi().eval()
     with torch.no_grad():
         pred_val = model(Xva).argmax(1).numpy()
-        pred_test = model(torch.tensor(Xte)).argmax(1).numpy() if final and Xte is not None else None
+        pred_test = model(Xte_t).argmax(1).numpy() if final and Xte_t is not None else None
     info["n_parameter"] = int(sum(p.numel() for p in model.parameters()))
     return pred_val, pred_test, info, model
 
@@ -154,7 +163,7 @@ def ukur(model, keluar: Path) -> dict:
     """Ukuran ONNX (KB) dan latensi (ms) 1 jendela di CPU. Dijalankan lagi di laptop meja untuk angka resmi."""
     import torch
     hasil = {}
-    x = torch.zeros(1, 6, 400)
+    x = torch.zeros(1, model.enc[0].in_channels, 400)
     with torch.no_grad():
         for _ in range(20):
             model(x)

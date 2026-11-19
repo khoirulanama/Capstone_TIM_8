@@ -1,0 +1,55 @@
+# Rencana eksperimen tim 8: Diagnosis beban tak seimbang kipas dari getaran
+# Label: desain -- jumlah mur di bilah (manual) + PWM kipas (otomatis)
+#
+# Versi 144 kondisi: ulangan 3, durasi_kondisi_detik 18.
+# Ini versi yang dirujuk kartu tugas "Gladi rencana" dan lampiran tim-08.pdf.
+# Berkas rencana/Rencana.yaml memuat usulan revisi (ulangan 2, 12 detik ->
+# 96 kondisi); keputusan final menunggu pembimbing. Lihat
+# sprint/gladi-rencana/122450041.md untuk catatan selisihnya.
+#
+# Skema mengikuti 00-metode-eksperimen-lapangan.pdf bagian 3:
+#   - faktor berupa daftar       -> faktor otomatis (disetel skrip)
+#   - faktor berupa mapping      -> memakai kunci jenis/taraf/instruksi
+#   - {taraf} pada instruksi     -> diganti nilai taraf saat dicetak
+
+tim: 8
+judul: Diagnosis beban tak seimbang kipas dari getaran
+pembimbing: Christyan Tamaro Nadeak
+pilar: Mesin dan energi
+seed: 1008
+ulangan: 3
+ulangan_blok: 3
+durasi_kondisi_detik: 18
+jeda_detik: 2
+# 12 pergantian blok x 2 menit (pasang/lepas mur + selotip + periksa).
+waktu_ganti_blok_detik: 120
+
+rekam:
+  audio:
+    aktif: true
+    sample_rate: 16000
+  kamera:
+    aktif: false
+
+faktor:
+  kipas:
+    jenis: otomatis
+    taraf: [100, 160, 220, 255]
+  beban_kipas:
+    jenis: manual
+    taraf:
+      - 0 mur
+      - 1 mur
+      - 2 mur
+      - 3 mur
+    instruksi: >-
+      Pasang {taraf} M3 dengan selotip di ujung satu bilah kipas
+      (lepas & pasang ulang tiap blok)
+
+metode:
+  jenis_tugas: Klasifikasi 4 kelas
+  masukan_model: Getaran kipas 400 Hz, jendela 1 s
+  metrik_utama: F1-makro
+  jalur: [CNN, RNN, Transformer, AE]
+  pembanding_non_dl: >-
+    Fitur statistik + FFT (RMS, puncak, kurtosis, energi pita) + Random Forest

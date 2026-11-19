@@ -1,4 +1,4 @@
-# Protokol evaluasi tim — Tim 8 (Diagnosis beban tak seimbang kipas dari getaran)
+# Protokol Evaluasi Tim 8 — Klasifikasi Beban Tak Seimbang Kipas dari Audio
 
 Diisi Penjaga Data & Evaluasi (Devi Rahayu) pada Sprint 0/1, digabung ke `main` lewat *pull request*
 yang disetujui pembimbing, lalu **dibekukan**. Perubahan setelah itu hanya lewat *pull request* baru
