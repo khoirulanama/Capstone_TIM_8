@@ -6,6 +6,7 @@ Menjalankan baseline dosen dan ``models/<nim>/run.py`` setiap anggota untuk tiap
 merakit ``reports/hasil_komparasi.md`` dari ``results/*/metrics.json`` (hanya seed terakhir
 yang tersimpan di metrics.json; sebaran antar-seed dicatat dari keluaran tiap run).
 """
+
 from __future__ import annotations
 
 import argparse
@@ -45,7 +46,7 @@ def main() -> None:
     elif (AKAR / "results" / "non_dl" / "metrics.json").exists():
         rf_ringkas.append(json.loads((AKAR / "results" / "non_dl" / "metrics.json").read_text("utf-8")))
     anggota = sorted(p for p in (AKAR / "models").iterdir() if p.is_dir() and (p / "run.py").exists()
-                     and p.name != "TEMPLATE" and (a.hanya is None or p.name in a.hanya))
+                    and p.name != "TEMPLATE" and (a.hanya is None or p.name in a.hanya))
     ringkas: dict[str, list[dict]] = {}
     for m in anggota:
         if not a.tanpa_latih:
@@ -79,7 +80,7 @@ def main() -> None:
     print(f"data_hash bersama ({len(semua_hasil)} hasil): {expected_hash}")
 
     baris = ["| NIM | Model | seed | val_acc | val_macro_f1 | test_acc | data_hash | durasi (s) | perangkat |",
-             "|---|---|---|---|---|---|---|---|---|"]
+            "|---|---|---|---|---|---|---|---|---|"]
     if baseline_hasil:
         h = baseline_hasil; mt = h["metrik"]
         baris.append(f"| baseline | softmax NumPy | {h['seed']} | {mt['val_acc']:.4f} | {mt['val_macro_f1']:.4f} | — | `{h['data_hash']}` | {h.get('durasi_detik', 0):.0f} | {h.get('perangkat', '')} |")

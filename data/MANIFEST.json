@@ -1,5 +1,8 @@
 {
-  "sumber": "../../sesi-20261116-182908 (rekaman meja uji aktual Tim 8)",
-  "berkas": ["data/rekaman_kipas_aktual.npz"],
-  "catatan": "Audio primer 48 kHz; label dari label.csv; jendela mono 400 Hz sesudah anti-alias resampling. File NPZ dibuat oleh src.protokol.prepare_audio.py dan tidak di-commit."
+  "sumber": "https://github.com/sains-data/capstone-dl-2026-starter",
+  "berkas": [
+    "data/sesi-20261116-182908/imu.csv",
+    "data/sesi-20261116-182908/label.csv"
+  ],
+  "catatan": "Data asli meja uji sesi 16 Nov 2026 (sesi-20261116-182908): 144 kondisi (12 blok x 12), IMU kipas 400 Hz, audio 48 kHz (rencana 16 kHz). 11 kondisi IMU putus (no 38, 95, 96, 98, 100, 119, 124, 125, 127, 128, 143)."
 }
