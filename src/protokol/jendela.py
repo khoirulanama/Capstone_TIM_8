@@ -26,13 +26,16 @@ JEDA_ANTAR_BLOK = 8.0                      # detik; jeda antar-kondisi sebenarny
 KANDIDAT = {
     "no": ["no", "kondisi", "nomor", "idx", "index", "n"],
     "blok": ["blok", "block", "id_blok"],
-    "t_mulai": ["t_mulai", "mulai", "t_start", "start", "t_awal", "t0"],
-    "t_selesai": ["t_selesai", "selesai", "t_end", "end", "t_akhir", "t1"],
+    "t_mulai": ["t_mulai_host", "t_mulai", "mulai", "t_start", "start", "t_awal", "t0"],
+    "t_selesai": ["t_selesai_host", "t_selesai", "selesai", "t_end", "end", "t_akhir", "t1"],
     "kipas": ["kipas", "pwm_kipas", "kipas_pwm"],
     "beban": ["beban_kipas", "beban", "mur"],
     "t_imu": ["t_host", "t", "waktu", "timestamp"],
     "sensor": ["imu", "sensor", "id_imu"],
 }
+SENSOR_KIPAS = {"k", "kipas"}                # nilai kolom ``imu`` untuk sensor di badan kipas (meja asli: "k")
+MAKS_CELAH = 0.05                            # detik; jendela dengan celah antar-sampel lebih besar dibuang
+MIN_SAMPEL = int(0.9 * FS)                   # jendela dengan sampel lebih sedikit dibuang (Wi-Fi ESP32 putus)
 
 
 def _kolom(df: pd.DataFrame, kunci: str, wajib: bool = True) -> str | None:
@@ -66,6 +69,12 @@ def baca_label(path: Path) -> pd.DataFrame:
     k_no = _kolom(df, "no", wajib=False)
     out["no"] = df[k_no].astype(int) if k_no else np.arange(1, len(df) + 1)
     k_blok = _kolom(df, "blok", wajib=False)
+    if "ulangan_blok" in df.columns and k_blok:         # label meja asli: blok 1..4 di dalam tiap pemasangan 1..3
+        kunci = list(zip(df["ulangan_blok"].astype(int), df[k_blok].astype(int)))
+        urut = {k: i for i, k in enumerate(sorted(set(kunci)))}          # id blok unik 0..11
+        out["blok"] = [urut[k] for k in kunci]
+        out["ulangan"] = df["ulangan_blok"].astype(int).to_numpy() - 1    # pemasangan ulang 0..2 (kolom 'ulangan' = pengulangan kondisi)
+        return out
     if k_blok:                                          # label.csv sudah memuat nomor blok
         urut = df.groupby(k_blok)[_kolom(df, "t_mulai")].min().rank(method="first").astype(int) - 1
         out["blok"] = df[k_blok].map(urut).astype(int)  # nomor blok 0.. menurut waktu mulai
@@ -102,7 +111,7 @@ def baca_imu(path: Path, sensor: str = "kipas") -> tuple[np.ndarray, np.ndarray]
     df = pd.read_csv(path)
     k_s = _kolom(df, "sensor", wajib=False)
     if k_s:
-        df = df[df[k_s].astype(str).str.lower() == sensor]
+        df = df[df[k_s].astype(str).str.lower().isin(SENSOR_KIPAS | {sensor})]
     k_t = _kolom(df, "t_imu")
     df = df.sort_values(k_t)
     if all(k in df.columns for k in KANAL):
@@ -127,16 +136,25 @@ def potong(folder: str | Path, buang: float = 1.0, jendela: float = 1.0, langkah
     label = baca_label(folder / "label.csv")
     label = label[~label["no"].isin(keluarkan)]
     t, v = baca_imu(folder / "imu.csv")
-    w, h = int(round(jendela * FS)), int(round(langkah * FS))
     X, y, kond, blok, ulang, kipas = [], [], [], [], [], []
+    grid = np.arange(int(round(jendela * FS))) / FS
+    total = dibuang = 0
     for r in label.itertuples():
-        # toleransi setengah sampel agar kondisi 12 s tidak kehilangan satu jendela karena pembulatan waktu
-        i0 = np.searchsorted(t, r.t_mulai + buang - 0.5 / FS, side="left")
-        i1 = np.searchsorted(t, r.t_selesai - 0.5 / FS, side="left")
-        seg = v[i0:i1]
-        for a in range(0, len(seg) - w + 1, h):         # jendela utuh saja; sisa di ujung dibuang
-            X.append(seg[a:a + w].T)
-            y.append(r.beban); kond.append(r.no); blok.append(r.blok); ulang.append(r.ulangan); kipas.append(r.kipas)
+        s0 = r.t_mulai + buang
+        while s0 + jendela <= r.t_selesai + 1e-6:
+            total += 1
+            i0 = np.searchsorted(t, s0, side="left")
+            i1 = np.searchsorted(t, s0 + jendela, side="left")
+            tt = t[i0:i1]
+            ok = len(tt) >= MIN_SAMPEL and np.max(np.diff(np.concatenate([[s0], tt, [s0 + jendela]]))) <= MAKS_CELAH
+            if ok:
+                seg = np.stack([np.interp(s0 + grid, tt, v[i0:i1, c]) for c in range(v.shape[1])])
+                X.append(seg)
+                y.append(r.beban); kond.append(r.no); blok.append(r.blok); ulang.append(r.ulangan); kipas.append(r.kipas)
+            else:
+                dibuang += 1
+            s0 += langkah
+    potong.laporan = {"total": total, "dibuang": dibuang}
     if not X:
         raise RuntimeError("tidak ada jendela yang terbentuk; periksa label.csv dan imu.csv")
     return {"X": np.stack(X).astype(np.float32), "y": np.asarray(y, np.int64),
