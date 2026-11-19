@@ -3,12 +3,13 @@
     python models/123450010/run.py --seed 1 [--final] [--lipatan 0]
 
 Gagasan: autoencoder 1D-konvolusi dipralatih TANPA label untuk merekonstruksi jendela primer
-(audio mono atau kanal IMU x 400 sampel), lalu vektor laten z dipakai oleh kepala linear untuk
-mengklasifikasikan 0/1/2/3 mur (representasi -> klasifikasi, jalur 'ae' di README).
+(6 kanal IMU x 400 sampel; masukan audio mono 1 kanal tetap didukung), lalu vektor laten z dipakai
+oleh kepala linear untuk mengklasifikasikan 0/1/2/3 mur (representasi -> klasifikasi, jalur 'ae' di README).
 
 Kontrak starter dipenuhi: data lewat ``src.protokol.data.muat()``, seed dari ``--seed``, prediksi
 ke results/<nim>/pred_val.npy (dan pred_test.npy hanya dengan --final), metrik dihitung oleh
-``src.common.evaluate`` (bukan di sini). Konfigurasi bawaan = konfigurasi akhir.
+``src.common.evaluate`` (bukan di sini). Normalisasi per kanal dari data latih saja (sesuai PROTOKOL.md).
+Konfigurasi bawaan = konfigurasi akhir.
 """
 from __future__ import annotations
 
@@ -32,8 +33,9 @@ NIM = Path(__file__).resolve().parent.name     # nama folder = NIM
 JALUR = "ae"
 
 # Konfigurasi akhir. Alasan tiap pilihan ditulis di catatan.md; ubah hanya lewat hasil pencarian yang dicatat.
-# finetune=True: pada data simulasi, encoder BEKU + kepala linear hanya ~0,35 macro-F1, sedangkan fine-tune ~0,94
-# (representasi rekonstruksi murni kurang memuat amplitudo relatif-terhadap-frekuensi). VERIFIKASI ULANG pada data meja.
+# finetune=True: pada data SIMULASI (Sprint 0), encoder BEKU + kepala linear hanya ~0,35 macro-F1, sedangkan
+# fine-tune ~0,94. Angka itu belum terbukti pada data meja asli; diverifikasi lewat ablasi.py (Sprint 2),
+# bukan dengan mengubah bawaan ini berdasarkan hasil validasi.
 BAWAAN = dict(latent=16, derau=0.10, epoch_ae=60, epoch_kepala=150, lr=1e-3, wd=1e-2, batch=64,
               dropout=0.2, pralatih=True, finetune=True)
 
@@ -104,7 +106,9 @@ def latih_dan_prediksi(seed: int, final: bool, cfg: dict | None = None):
         Xtr, Xva = Xtr[:, None, :], Xva[:, None, :]
         if Xte is not None:
             Xte = Xte[:, None, :]
-    mu, sd = float(Xtr.mean()), float(Xtr.std()) + 1e-8
+    # Normalisasi per kanal, hanya dari data latih (PROTOKOL.md); diterapkan apa adanya ke val dan uji.
+    mu = Xtr.mean(axis=(0, 2), keepdims=True)
+    sd = Xtr.std(axis=(0, 2), keepdims=True) + 1e-8
     Xtr, Xva = (Xtr - mu) / sd, (Xva - mu) / sd
     if Xte is not None:
         Xte = (Xte - mu) / sd
