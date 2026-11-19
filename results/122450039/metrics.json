@@ -1,4 +1,5 @@
 {
+  
   "metrik": {
     "val_acc": 0.368873,
     "val_macro_f1": 0.294255
