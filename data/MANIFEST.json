@@ -1,11 +1,11 @@
 {
-  "sumber": "SIMULASI (src/protokol/simulasi.py, seed 1008) - bukan data meja; ganti dengan sesi asli",
-  "sesi": "data/sesi-simulasi",
-  "sha256_label": "6d2f4bb138c02795bdf856f51b0d5b13ddb89cdeb1d5435081bb404339f2df00",
+  "sumber": "(isi: tautan penyimpanan tim / pengelola meja)",
+  "sesi": "data/sesi-20261116-182908",
+  "sha256_label": "234086bd36699773f62fe3b8989b0c9ff181b56bfd4f29fd3e343bc9b7dcea71",
   "berkas": [
-    "data/sesi-simulasi/label.csv",
-    "data/sesi-simulasi/imu.csv"
+    "data/sesi-20261116-182908/label.csv",
+    "data/sesi-20261116-182908/imu.csv"
   ],
   "keluarkan": [],
-  "catatan": "Sprint 1: sesi simulasi IMU (96 kondisi = 12 blok x 8, 12 s, 400 Hz) mengikuti Rencana/Rencana.yaml. Buat ulang dengan: python -m src.protokol.simulasi --keluar data/sesi-simulasi"
+  "catatan": "Isi: tanggal sesi, jumlah kondisi, kondisi yang dikeluarkan dan alasannya (lihat data/CATATAN-SESI.md)."
 }
