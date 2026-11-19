@@ -79,7 +79,7 @@ def main() -> None:
     print(f"data_hash bersama ({len(semua_hasil)} hasil): {expected_hash}")
 
     baris = ["| NIM | Model | seed | val_acc | val_macro_f1 | test_acc | data_hash | durasi (s) | perangkat |",
-             "|---|---|---|---|---|---|---|---|---|"]
+            "|---|---|---|---|---|---|---|---|---|"]
     if baseline_hasil:
         h = baseline_hasil; mt = h["metrik"]
         baris.append(f"| baseline | softmax NumPy | {h['seed']} | {mt['val_acc']:.4f} | {mt['val_macro_f1']:.4f} | — | `{h['data_hash']}` | {h.get('durasi_detik', 0):.0f} | {h.get('perangkat', '')} |")
