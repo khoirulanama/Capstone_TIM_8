@@ -45,7 +45,7 @@ def main() -> None:
     elif (AKAR / "results" / "non_dl" / "metrics.json").exists():
         rf_ringkas.append(json.loads((AKAR / "results" / "non_dl" / "metrics.json").read_text("utf-8")))
     anggota = sorted(p for p in (AKAR / "models").iterdir() if p.is_dir() and (p / "run.py").exists()
-                     and p.name != "TEMPLATE" and (a.hanya is None or p.name in a.hanya))
+                    and p.name != "TEMPLATE" and (a.hanya is None or p.name in a.hanya))
     ringkas: dict[str, list[dict]] = {}
     for m in anggota:
         if not a.tanpa_latih:
