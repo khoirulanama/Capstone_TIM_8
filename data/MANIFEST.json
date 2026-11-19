@@ -1,5 +1,5 @@
 {
-  "sumber": "(isi: tautan penyimpanan tim / pengelola meja)",
+  "sumber": "Meja uji Ruang Cerdas 5 V, sesi sesi-20261116-182908, diterima dari pengelola meja sebagai arsip tim08_sesi-20261116-182908.tar.gz",
   "sesi": "data/sesi-20261116-182908",
   "sha256_label": "234086bd36699773f62fe3b8989b0c9ff181b56bfd4f29fd3e343bc9b7dcea71",
   "berkas": [
@@ -7,5 +7,5 @@
     "data/sesi-20261116-182908/imu.csv"
   ],
   "keluarkan": [],
-  "catatan": "Isi: tanggal sesi, jumlah kondisi, kondisi yang dikeluarkan dan alasannya (lihat data/CATATAN-SESI.md)."
+  "catatan": "Data asli meja uji sesi 16 Nov 2026: 144 kondisi (12 blok x 12), tidak ada kondisi dikeluarkan. IMU kipas sekitar 386 Hz; 10 kondisi dengan laju di bawah 350/s (lihat data/CATATAN-SESI.md)."
 }
