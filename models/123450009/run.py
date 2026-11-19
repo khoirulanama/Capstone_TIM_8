@@ -81,12 +81,10 @@ def latih_dan_prediksi(seed: int, final: bool) -> tuple[np.ndarray, np.ndarray |
             X = X[..., None]
         return X
 
-    Xtr_np = ke_np(Xtr)
-    mean = Xtr_np.mean(axis=(0, 1)).reshape(1, 1, -1)   # statistik dari data latih saja
-    std = Xtr_np.std(axis=(0, 1)).reshape(1, 1, -1) + 1e-8
-
+    # data.muat() sudah menormalisasi per kanal (mean/std dari data latih);
+    # tidak dinormalisasi ulang di sini agar tidak dobel.
     def ke_tensor(X):
-        return torch.from_numpy((ke_np(X) - mean) / std)
+        return torch.from_numpy(ke_np(X))
 
     X = ke_tensor(Xtr)
     y = torch.from_numpy(np.asarray(ytr, dtype=np.int64))
