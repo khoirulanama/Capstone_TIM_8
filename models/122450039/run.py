@@ -1,13 +1,14 @@
 
-"""Implementasi Jalur CNN (1D-CNN) untuk Diagnosis Beban Tak Seimbang Kipas.
+"""CNN 2D untuk klasifikasi beban kipas dari jendela audio aktual.
 
-Model: 1D-CNN pada jendela getaran 1 detik (400 Hz -> 400 titik).
-Output: Klasifikasi 4 kelas (0, 1, 2, 3 mur).
+Audio mono 1 detik (400 Hz, 400 sampel) diubah menjadi log-spektrogram STFT
+65 x 9. CNN kecil mempelajari pola frekuensi dan perubahan antar-frame.
 
 Penggunaan:
     python models/122450039/run.py --seed 1
     python models/122450039/run.py --seed 1 --final
 """
+#Model CNN
 from __future__ import annotations
 
 import argparse
@@ -30,88 +31,80 @@ NIM = Path(__file__).resolve().parent.name     # nama folder = NIM (122450039)
 JALUR = "cnn"                                   # cnn | tl | rnn | trf | ae
 
 
-class ConvNet1D(nn.Module):
-    """Arsitektur 1D-CNN untuk klasifikasi sinyal getaran 1D (400 sampel).
-    
-    Terdiri dari blok konvolusi 1D (Conv1d, BatchNorm, ReLU, MaxPool, Dropout)
-    untuk ekstraksi fitur lokal domain waktu dan lapisan fully-connected untuk klasifikasi.
-    """
+class ConvNetAudio(nn.Module):
+    """CNN ringkas untuk log-spektrogram [batch, 1, 65 frekuensi, 9 waktu]."""
     def __init__(self, num_classes: int = 4, in_channels: int = 1):
         super().__init__()
         self.features = nn.Sequential(
-            # Blok 1: [B, 1, 400] -> [B, 16, 200]
-            nn.Conv1d(in_channels, 16, kernel_size=7, stride=1, padding=3),
-            nn.BatchNorm1d(16),
+            nn.Conv2d(in_channels, 16, kernel_size=3, padding=1, bias=False),
+            nn.BatchNorm2d(16),
             nn.ReLU(),
-            nn.MaxPool1d(kernel_size=2),
-            nn.Dropout(0.1),
-
-            # Blok 2: [B, 16, 200] -> [B, 32, 100]
-            nn.Conv1d(16, 32, kernel_size=5, stride=1, padding=2),
-            nn.BatchNorm1d(32),
+            nn.MaxPool2d(2),
+            nn.Dropout2d(0.10),
+            nn.Conv2d(16, 32, kernel_size=3, padding=1, bias=False),
+            nn.BatchNorm2d(32),
             nn.ReLU(),
-            nn.MaxPool1d(kernel_size=2),
-            nn.Dropout(0.2),
-
-            # Blok 3: [B, 32, 100] -> [B, 64, 50]
-            nn.Conv1d(32, 64, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm1d(64),
+            nn.MaxPool2d(2),
+            nn.Dropout2d(0.15),
+            nn.Conv2d(32, 48, kernel_size=3, padding=1, bias=False),
+            nn.BatchNorm2d(48),
             nn.ReLU(),
-            nn.MaxPool1d(kernel_size=2),
-            nn.Dropout(0.2),
-
-            # Global average pooling: [B, 64, 50] -> [B, 64, 1]
-            nn.AdaptiveAvgPool1d(1),
+            nn.AdaptiveAvgPool2d(1),
         )
         self.classifier = nn.Sequential(
-            nn.Linear(64, 32),
+            nn.Linear(48, 24),
             nn.ReLU(),
-            nn.Dropout(0.2),
-            nn.Linear(32, num_classes)
+            nn.Dropout(0.25),
+            nn.Linear(24, num_classes),
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        # Masukan: [B, 1, 400]
         feats = self.features(x)
-        feats = torch.flatten(feats, 1)  # [B, 64]
-        out = self.classifier(feats)      # [B, num_classes]
-        return out
+        return self.classifier(torch.flatten(feats, 1))
+
+
+def log_spektrogram(x: torch.Tensor) -> torch.Tensor:
+    """STFT magnitudo log; n_fft=128 memberi resolusi 3.125 Hz pada 400 Hz."""
+    stft = torch.stft(x, n_fft=128, hop_length=32, win_length=128,
+                      window=torch.hann_window(128, device=x.device),
+                      center=False, return_complex=True)
+    return torch.log1p(stft.abs())
 
 
 def latih_dan_prediksi(seed: int, final: bool) -> tuple[np.ndarray, np.ndarray | None]:
-    """Latih model 1D-CNN dan lakukan inferensi pada data validasi (serta data uji jika final=True)."""
+    """Latih CNN audio dan prediksi validasi (serta test bila final=True)."""
     torch.manual_seed(seed)
     np.random.seed(seed)
 
     # Muat data sesuai protokol tim
     Xtr, ytr, Xva, yva, Xte, yte = data.muat()
 
-    # Normalisasi standar (z-score) dihitung HANYA dari data latih (fit on train only)
-    mean_tr = np.mean(Xtr)
-    std_tr = np.std(Xtr) + 1e-8
-
-    Xtr_norm = (Xtr - mean_tr) / std_tr
-    Xva_norm = (Xva - mean_tr) / std_tr
-    Xte_norm = (Xte - mean_tr) / std_tr if Xte is not None else None
-
-    # Ubah ke tensor [N, 1, 400] untuk Conv1d
-    X_train_tensor = torch.tensor(Xtr_norm[:, np.newaxis, :], dtype=torch.float32)
+    # Fitur STFT dihitung per jendela; statistik normalisasi hanya dari train.
+    Xtr_t = torch.from_numpy(np.asarray(Xtr, dtype=np.float32))
+    Xva_t = torch.from_numpy(np.asarray(Xva, dtype=np.float32))
+    Xte_t = torch.from_numpy(np.asarray(Xte, dtype=np.float32)) if Xte is not None else None
+    Ftr = log_spektrogram(Xtr_t)
+    Fva = log_spektrogram(Xva_t)
+    Fte = log_spektrogram(Xte_t) if Xte_t is not None else None
+    mean_tr, std_tr = Ftr.mean(), Ftr.std().clamp_min(1e-6)
+    X_train_tensor = ((Ftr - mean_tr) / std_tr).unsqueeze(1)
     y_train_tensor = torch.tensor(ytr, dtype=torch.long)
-
-    X_val_tensor = torch.tensor(Xva_norm[:, np.newaxis, :], dtype=torch.float32)
+    X_val_tensor = ((Fva - mean_tr) / std_tr).unsqueeze(1)
 
     # Dataset & Dataloader
-    batch_size = 32
+    batch_size = 64
     train_ds = TensorDataset(X_train_tensor, y_train_tensor)
     train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True)
 
     device = torch.device("cpu")
-    model = ConvNet1D(num_classes=4, in_channels=1).to(device)
+    model = ConvNetAudio(num_classes=4, in_channels=1).to(device)
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.003, weight_decay=1e-4)
+    optimizer = optim.AdamW(model.parameters(), lr=0.001, weight_decay=1e-3)
 
-    # Pelatihan 15 epoch (cepat dan efisien di CPU)
-    epochs = 15
+    # Pilih checkpoint dengan macro-F1 validasi; hentikan saat tidak membaik.
+    epochs, patience = 100, 15
+    best_f1, best_state, stale = -1.0, None, 0
+    yva_np = np.asarray(yva, dtype=np.int64)
     model.train()
     for _ in range(epochs):
         for bx, by in train_loader:
@@ -121,6 +114,26 @@ def latih_dan_prediksi(seed: int, final: bool) -> tuple[np.ndarray, np.ndarray |
             loss = criterion(out, by)
             loss.backward()
             optimizer.step()
+        model.eval()
+        with torch.no_grad():
+            pred = model(X_val_tensor.to(device)).argmax(dim=1).cpu().numpy()
+        f1_per_class = []
+        for c in range(4):
+            tp = np.sum((pred == c) & (yva_np == c))
+            fp = np.sum((pred == c) & (yva_np != c))
+            fn = np.sum((pred != c) & (yva_np == c))
+            f1_per_class.append(2 * tp / max(2 * tp + fp + fn, 1))
+        score = float(np.mean(f1_per_class))
+        if score > best_f1:
+            best_f1, best_state, stale = score, {k: v.detach().clone() for k, v in model.state_dict().items()}, 0
+        else:
+            stale += 1
+            if stale >= patience:
+                break
+        model.train()
+
+    if best_state is not None:
+        model.load_state_dict(best_state)
 
     # Evaluasi model
     model.eval()
@@ -129,8 +142,8 @@ def latih_dan_prediksi(seed: int, final: bool) -> tuple[np.ndarray, np.ndarray |
         pred_val = logits_val.argmax(dim=1).cpu().numpy()
 
         pred_test = None
-        if final and Xte_norm is not None:
-            X_test_tensor = torch.tensor(Xte_norm[:, np.newaxis, :], dtype=torch.float32).to(device)
+        if final and Fte is not None:
+            X_test_tensor = ((Fte - mean_tr) / std_tr).unsqueeze(1).to(device)
             logits_test = model(X_test_tensor)
             pred_test = logits_test.argmax(dim=1).cpu().numpy()
 
