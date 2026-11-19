@@ -56,6 +56,30 @@ Dijadwalkan Sprint 2, pada lipatan dan anggaran yang sama:
 
 Dijadwalkan Sprint 2. Sprint 1 baru menjalankan **satu seed** sesuai DoD Demo Sprint 1.
 
+## Uji kerangka pada data simulasi (tugas #13, 19 Nov 2026)
+
+Tujuan: memastikan `run.py` memanggil `data.muat()`, menulis hasil lewat
+`src.common.evaluate`, dan bentuk masukan/keluaran sesuai jenis tugas sebelum data
+meja dipakai. Data simulasi dibangkitkan dengan
+`python -m src.protokol.simulasi --keluar data/sesi-simulasi --tulis-manifest`
+(96 kondisi, 12 detik, bukan data penelitian).
+
+Perintah dan hasil (`python models/122450041/run.py --seed 1`, log lengkap di
+`sprint/sprint-1/bukti-simulasi-122450041.log`):
+
+| Butir | Nilai |
+|---|---|
+| Bentuk masukan `data.muat()` | train `(672, 400, 6)`, val `(352, 400, 6)`, test `(352, 400, 6)` |
+| Bentuk urutan untuk GRU | `(N, 400, 6)` — 400 langkah waktu, 6 kanal IMU |
+| Bentuk keluaran | 4 logits (klasifikasi 4 kelas: 0–3 mur) |
+| `val_acc` / `val_macro_f1` | 1.0000 / 1.0000 |
+| Durasi | 513,4 detik (CPU laptop) |
+| `data_hash` simulasi | `51dbc6994ddc5b601f28d5bf8320d4d8` |
+
+> Angka simulasi **bukan** hasil penelitian dan tidak boleh dibandingkan dengan metrik
+> data primer. Setelah uji ini, `data/MANIFEST.json` dikembalikan ke sesi asli
+> (`e952a9c4…`) dan artefak simulasi tidak menggantikan `results/122450041/metrics.json`.
+
 ## Hasil Sprint 1 — data primer meja (seed 1)
 
 Perintah: `python models/122450041/run.py --seed 1` (lipatan 0, perangkat CPU laptop).

@@ -1,0 +1,34 @@
+[data] train=(672, 400, 6) val=(352, 400, 6) test=(352, 400, 6) | tugas=klasifikasi | keluaran=4 | normalisasi mean=-0.00000 std=0.99999
+[model] GRU bidirectional hidden=64 layers=2 dropout=0.25 | AdamW lr=0.001 wd=1e-4 | batch=64
+epoch 01/30 loss=1.2579 val_macro_f1=0.5327 lr=1.00e-03 *
+epoch 02/30 loss=1.0519 val_macro_f1=0.4825 lr=1.00e-03
+epoch 03/30 loss=0.9441 val_macro_f1=0.4680 lr=1.00e-03
+epoch 04/30 loss=0.8372 val_macro_f1=0.5242 lr=5.00e-04
+epoch 05/30 loss=0.7568 val_macro_f1=0.5594 lr=5.00e-04 *
+epoch 06/30 loss=0.6835 val_macro_f1=0.6406 lr=5.00e-04 *
+epoch 07/30 loss=0.6433 val_macro_f1=0.6568 lr=5.00e-04 *
+epoch 08/30 loss=0.5720 val_macro_f1=0.7481 lr=5.00e-04 *
+epoch 09/30 loss=0.5027 val_macro_f1=0.7893 lr=5.00e-04 *
+epoch 10/30 loss=0.4486 val_macro_f1=0.8541 lr=5.00e-04 *
+epoch 11/30 loss=0.3706 val_macro_f1=0.9341 lr=5.00e-04 *
+epoch 12/30 loss=0.3206 val_macro_f1=0.9483 lr=5.00e-04 *
+epoch 13/30 loss=0.2712 val_macro_f1=0.9542 lr=5.00e-04 *
+epoch 14/30 loss=0.2155 val_macro_f1=0.9629 lr=5.00e-04 *
+epoch 15/30 loss=0.1800 val_macro_f1=0.9686 lr=5.00e-04 *
+epoch 16/30 loss=0.1404 val_macro_f1=0.9659 lr=5.00e-04
+epoch 17/30 loss=0.1120 val_macro_f1=0.9457 lr=5.00e-04
+epoch 18/30 loss=0.0930 val_macro_f1=0.9744 lr=5.00e-04 *
+epoch 19/30 loss=0.0770 val_macro_f1=0.9886 lr=5.00e-04 *
+epoch 20/30 loss=0.0733 val_macro_f1=1.0000 lr=5.00e-04 *
+epoch 21/30 loss=0.0601 val_macro_f1=0.9801 lr=5.00e-04
+epoch 22/30 loss=0.0489 val_macro_f1=0.9801 lr=5.00e-04
+epoch 23/30 loss=0.0460 val_macro_f1=0.9801 lr=2.50e-04
+epoch 24/30 loss=0.0388 val_macro_f1=0.9801 lr=2.50e-04
+epoch 25/30 loss=0.0372 val_macro_f1=0.9886 lr=2.50e-04
+epoch 26/30 loss=0.0340 val_macro_f1=0.9858 lr=1.25e-04
+epoch 27/30 loss=0.0331 val_macro_f1=0.9886 lr=1.25e-04
+epoch 28/30 loss=0.0320 val_macro_f1=0.9829 lr=1.25e-04
+{"val_acc": 1.0, "val_macro_f1": 1.0} ΓåÆ results\122450041\metrics.json
+[early-stop] tidak membaik 8 epoch; kembali ke epoch 20
+[selesai] epoch terbaik=20 val_macro_f1=1.0000
+[output] pred_val=(352,) durasi=513.4 s -> results\122450041
