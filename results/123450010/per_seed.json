@@ -1,10 +1,10 @@
 {
   "1": {
     "metrik": {
-      "val_acc": 0.322304,
-      "val_macro_f1": 0.300991
+      "val_acc": 0.273177,
+      "val_macro_f1": 0.192088
     },
-    "durasi_detik": 38.5,
+    "durasi_detik": 132.5,
     "konfigurasi": {
       "latent": 16,
       "derau": 0.1,
@@ -17,7 +17,7 @@
       "pralatih": true,
       "finetune": true
     },
-    "rekon_val_mse": 0.10224486142396927,
-    "n_parameter": 65588
+    "rekon_val_mse": 0.16195251047611237,
+    "n_parameter": 66148
   }
 }
