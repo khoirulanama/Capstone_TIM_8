@@ -1,0 +1,23 @@
+{
+  "1": {
+    "metrik": {
+      "val_acc": 0.322304,
+      "val_macro_f1": 0.300991
+    },
+    "durasi_detik": 38.5,
+    "konfigurasi": {
+      "latent": 16,
+      "derau": 0.1,
+      "epoch_ae": 60,
+      "epoch_kepala": 150,
+      "lr": 0.001,
+      "wd": 0.01,
+      "batch": 64,
+      "dropout": 0.2,
+      "pralatih": true,
+      "finetune": true
+    },
+    "rekon_val_mse": 0.10224486142396927,
+    "n_parameter": 65588
+  }
+}
